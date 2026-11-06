@@ -8,8 +8,8 @@ Local verification includes real VS Code editor tests and actual TrueForge runti
 
 ## Contributors and responsibility
 
-- **Shubhaang Kataruka — Build:** TrueForge sessions, coding agent, source retrieval, edit proposals and core integration.
-- **Aditya Ranjan — Defend/Prove:** approval UI, path and tool security audit, verification, cancellation integrity and security review.
+- **Aditya Ranjan** handles Defend/Prove, approval UI, path and tool security audit, verification, cancellation integrity and security review. [@kvianAR](https://github.com/kvianAR)
+- **Shubhaang Kataruka** handles Build, TrueForge sessions, coding agent, source retrieval, edit proposals and core integration. [@S-h-u-b-h-1](https://github.com/S-h-u-b-h-1)
 - **Joint:** shared contracts, integration, mandatory competition tasks and release checks.
 
 ## Start here — VS Code sidebar
