@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "166502b",
+  "interface": "Installed desktop VS Code, normal UI driven through Playwright CDP",
+  "cancellation": {
+    "model": "meta-muse/muse-spark-1-3",
+    "session": "01m6ryv7zqt2483zehc13vzatt",
+    "trigger": "Sidebar Stop during real streamed run",
+    "message": "Run cancelled; no proposals were applied",
+    "trackedSourceUnchanged": true,
+    "pendingProposalsDiscarded": true,
+    "latencyNotMeasured": true
+  },
+  "syntheticReview": {
+    "modelGenerated": false,
+    "source": "Owned handoff_review.py fixture, imported full v1 proposal",
+    "checks": {
+      "applyRequiresDecisions": true,
+      "applyThenExplicitSave": true,
+      "guardedUndoSucceeded": true,
+      "saveRestoredOriginalBytes": true,
+      "staleEditBlocksReview": true,
+      "dirtyRecheckRefused": true,
+      "exactBaseRestoredByFixtureController": true,
+      "cleanRecheckResumed": true,
+      "resumedApplyAndUndoSucceeded": true
+    },
+    "closedDocumentReopen": {
+      "interface": "View: Close Editor in All Groups on the reviewed source",
+      "applyBlockedBeforeRecheck": true,
+      "explicitRecheckReopenedSourceTab": true,
+      "originalHashPreserved": true,
+      "retainedDecisions": true,
+      "separateApplyThenGuardedUndoSucceeded": true
+    }
+  },
+  "limitations": [
+    "UI automation is not a human-operated recording.",
+    "Typing then a single native Undo did not remove the entire temporary edit, so dirty Recheck correctly refused it. The fixture controller subsequently restored exact original disk bytes before successful Recheck.",
+    "The separate Task B run refused guarded Undo after its source tabs were closed. That outcome remains documented.",
+    "Earlier attempts closed only one editor copy. The successful closed-source run used Close Editor in All Groups."
+  ]
+}

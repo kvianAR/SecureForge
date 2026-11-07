@@ -69,6 +69,11 @@ test('agent panel emits valid script, bounds tasks and surfaces run failures', a
   assert.equal(commands.at(-1), 'workbench.action.openRecent');
   await receive({ type: 'openFolder' });
   assert.equal(commands.at(-1), 'vscode.openFolder');
+  vscode.workspace.workspaceFolders[0].uri.fsPath = '/tmp/<img src=x>&research';
+  provider.resolveWebviewView(panel);
+  assert.match(panel.webview.html, /title="\/tmp\/&lt;img src=x&gt;&amp;research"/);
+  assert.match(panel.webview.html, /<span>&lt;img src=x&gt;&amp;research<\/span>/);
+  assert.doesNotMatch(panel.webview.html, /<img src=x>/);
 });
 
 test('sidebar defaults to the right, and minimal composer dispatches tasks safely', async () => {

@@ -34,6 +34,7 @@ jobs:
         if: runner.os == 'Linux'
         run: npm run package:extension
       - name: Validate VSIX contents
+        id: vsix
         if: runner.os == 'Linux'
         shell: bash
         run: |
@@ -44,10 +45,11 @@ jobs:
           unzip -Z1 "$archive" | grep -Fx 'extension/extension.cjs'
           unzip -Z1 "$archive" | grep -Fx 'extension/dist/extension.mjs'
           unzip -Z1 "$archive" | grep -Fx 'extension/media/secureforge.svg'
+          echo "archive=$archive" >> "$GITHUB_OUTPUT"
       - name: Retain candidate VSIX
         if: runner.os == 'Linux'
         uses: actions/upload-artifact@v4
         with:
           name: secureforge-vsix-candidate
-          path: outputs/SecureForge-0.1.0.vsix
+          path: ${{ steps.vsix.outputs.archive }}
           if-no-files-found: error

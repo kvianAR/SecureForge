@@ -53,7 +53,7 @@ async function localPythonSourcePath(workspace) {
 
 export async function prepareCommand(workspace, request) {
   if (!request || !['node', 'python3'].includes(request.executable) || !Array.isArray(request.args) ||
-      request.args.some(arg => typeof arg !== 'string' || arg.length > 500)) {
+      request.args.some(arg => typeof arg !== 'string' || arg.length > 500 || arg.includes('\\'))) {
     throw new Error('Only reviewed node --test or python3 -m pytest commands are supported');
   }
   const args = [...request.args];

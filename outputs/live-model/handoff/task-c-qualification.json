@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "166502b",
+  "flaskRevision": "22d924701a6ae2e4cd01e9a15bbaf3946094af65",
+  "interface": "Installed VS Code normal Inline Edit Selection driven through Playwright CDP",
+  "session": "01m6ryhzntb0nrd2p8rvtqn3a8",
+  "providerSetup": "Temporary OpenAI-compatible provider in TrueForge with unreachable http://127.0.0.1:1/v1 endpoint and non-secret fixture authentication",
+  "promptSource": "Exact Task A prompt with get_debug_flag selected",
+  "outcome": "terminal_error",
+  "message": "TrueForge run failed (model or runtime returned a terminal error; inspect the TrueForge session). No proposals were applied.",
+  "checks": {
+    "editorCursorActionCompleted": true,
+    "clearEditorError": true,
+    "trackedSourceUnchanged": true,
+    "gitStatusCleanBeforeOwnedLab": true,
+    "temporaryProviderRemoved": true,
+    "configuredMuseRestored": true
+  },
+  "limitations": [
+    "The provider failed quickly. The captured cursor action demonstrates a responsive editor after failure; it does not establish a timed pending-request responsiveness interval.",
+    "No automatic fallback to another model is implemented or claimed.",
+    "This is automated installed UI evidence and is separate from the mandatory official recording."
+  ]
+}

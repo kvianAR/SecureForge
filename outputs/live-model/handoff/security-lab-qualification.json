@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "166502b",
+  "interface": "Installed VS Code extension, normal UI driven through Playwright CDP",
+  "repair": "Exact owned-fixture template, no model-generated security-repair claim",
+  "proofStatus": "verified_on_owned_fixture",
+  "baseline": {
+    "status": "failed",
+    "executed": true,
+    "exitCode": 1
+  },
+  "after": {
+    "status": "passed",
+    "executed": true,
+    "exitCode": 0,
+    "passed": 4
+  },
+  "independentChecks": {
+    "receiptIds": true,
+    "unchangedTestHash": true,
+    "targetBeforeAfterHashes": true,
+    "savedTargetHash": true,
+    "approvedProposal": true,
+    "safeControlUnflagged": true
+  },
+  "limitations": [
+    "Evidence covers the owned regression cases under these local conditions. Concurrent path replacement is outside this fixture.",
+    "Repository tests execute with the local user permissions.",
+    "The Passport also retains earlier session records. Its Task B application event does not assert current disk state after later restoration.",
+    "Credential screening and export redaction remain best effort."
+  ]
+}

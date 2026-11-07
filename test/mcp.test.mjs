@@ -4,6 +4,7 @@ import { mkdtemp, writeFile, readFile, rm } from 'node:fs/promises';
 import path from 'node:path';
 import { tmpdir } from 'node:os';
 import { createMcpServer } from '../src/mcp-server.mjs';
+import { Workspace } from '../src/workspace.mjs';
 
 async function setup(t) {
   const root = await mkdtemp(path.join(tmpdir(), 'secureforge-mcp-'));
@@ -17,8 +18,18 @@ async function setup(t) {
     return { status: res.status, data: res.status === 202 ? null : await res.json() };
   };
   const request = (id, method, params) => ({ jsonrpc: '2.0', id, method, params });
-  return { root, post, request };
+  return { root, post, request, serverPort: instance.address.port };
 }
+
+test('failed MCP startup closes its initialized workspace', async t => {
+  const { root, serverPort } = await setup(t);
+  const originalClose = Workspace.prototype.close;
+  const close = t.mock.method(Workspace.prototype, 'close', async function () {
+    return originalClose.call(this);
+  });
+  await assert.rejects(createMcpServer({ root, port: serverPort }), { code: 'EADDRINUSE' });
+  assert.equal(close.mock.callCount(), 1);
+});
 
 test('MCP initializes, advertises bounded tools, and handles notifications', async (t) => {
   const { post, request } = await setup(t);

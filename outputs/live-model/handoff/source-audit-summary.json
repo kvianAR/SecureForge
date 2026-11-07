@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "codeCommit": "1a08ad157046230f509a5fb3772e3fdbcf6b147f",
+  "baseline": "4f15e27f743ff6fdca8d200486a6c5dd98a18ed6",
+  "profile": "standard",
+  "method": "Source-only audit, separate from authorized product regression runs",
+  "scope": [
+    "src",
+    "extension",
+    "scripts",
+    "test",
+    ".github",
+    "package.json",
+    "package-lock.json",
+    "fixtures"
+  ],
+  "coverageUnits": 19,
+  "sourceReviews": 16,
+  "confirmed": 0,
+  "needsValidation": 0,
+  "rejectedAfterFix": 2,
+  "priorLeadsResolved": 4,
+  "validators": {
+    "findings": "passed",
+    "coverage_ledger": "passed"
+  },
+  "fixes": [
+    "Canonical verification argument binding",
+    "OS-temporary owned lab creation with exclusive copies and partial cleanup",
+    "Initial workspace HTML escaping",
+    "Current versioned CI artifact retention",
+    "Workspace cleanup on MCP listen failure"
+  ],
+  "limits": [
+    "No adversarial runtime execution under the full audit sandbox",
+    "Best-effort credentials filtering",
+    "Approved tests retain local-user authority",
+    "Provider deployment and OS-wide isolation outside source review"
+  ],
+  "report": "docs/SECURITY_AUDIT_2026-11-07.md"
+}

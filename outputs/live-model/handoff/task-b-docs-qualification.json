@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "codeCommit": "c3f895b",
+  "runtime": "0.183.0",
+  "model": "meta-muse/muse-spark-1-3",
+  "session": "01m6rzz9vqcp2q7p3ngrd37xjv",
+  "interface": "Installed VS Code normal UI driven through Playwright CDP",
+  "prompt": "Exact official Task B without file hints",
+  "checkout": "Pinned Flask checkout with original tracked files restored; earlier owned UI fixture/lab remained untracked. Earlier fresh-checkout qualification is retained separately.",
+  "files": [
+    "src/flask/cli.py",
+    "docs/api.rst",
+    "docs/cli.rst",
+    "tests/test_cli.py"
+  ],
+  "hunks": 6,
+  "stagingApprovals": 1,
+  "normalApprovedTests": 67,
+  "independentTests": 102,
+  "savedHashesMatchPassport": true,
+  "sphinx": {
+    "baseline": "passed",
+    "candidate": "passed",
+    "command": "python -m sphinx -E -b html -W --keep-going docs ../sphinx-candidate",
+    "sourceImport": "Project-local venv and PYTHONPATH=checkout/src",
+    "apiTargetAdded": true
+  },
+  "limitations": [
+    "This follow-up used the restored pinned checkout, not another new clone.",
+    "Automated installed UI evidence is separate from the mandatory ordered official recording."
+  ]
+}

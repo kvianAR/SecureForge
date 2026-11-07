@@ -1,0 +1,155 @@
+{
+  "schemaVersion": 1,
+  "id": "38365646-66e4-49af-8265-1007db0a6fc6",
+  "createdAt": "2026-11-06T18:02:02.965Z",
+  "patches": [
+    {
+      "id": "01m6rzz9vqcp2q7p3ngrd37xjv",
+      "sessionId": "01m6rzz9vqcp2q7p3ngrd37xjv",
+      "recordedAt": "2026-11-06T18:00:25.469Z",
+      "status": "applied",
+      "actor": "local user review",
+      "files": [
+        {
+          "path": "src/flask/cli.py",
+          "baseSha256": "3df87bdbe07196fa07d101c20ce7351ef5c6ecaab95deb5fdf3ccdcf690d4879",
+          "hunks": [
+            {
+              "id": "a1ece1fa-c15f-4ac9-b3d3-c08cf58de63c:h1",
+              "line": 597,
+              "decision": "accept"
+            },
+            {
+              "id": "a1ece1fa-c15f-4ac9-b3d3-c08cf58de63c:h2",
+              "line": 1118,
+              "decision": "accept"
+            }
+          ]
+        },
+        {
+          "path": "docs/api.rst",
+          "baseSha256": "08650a7a23f8b2f0ca46f52f66c79ae578fe105b33a6ee541c20bc6aa70e52c9",
+          "hunks": [
+            {
+              "id": "0428e5c6-c991-4cfe-8151-883846a7da38:h1",
+              "line": 718,
+              "decision": "accept"
+            }
+          ]
+        },
+        {
+          "path": "docs/cli.rst",
+          "baseSha256": "e8e5e9b220a5159e9c9c8b413de499aa5a51cd0ca487681e2352bbdf6f9b0cda",
+          "hunks": [
+            {
+              "id": "a9df1923-49fb-48ba-8b3a-f06272310a67:h1",
+              "line": 149,
+              "decision": "accept"
+            }
+          ]
+        },
+        {
+          "path": "tests/test_cli.py",
+          "baseSha256": "bc9b456bcd5c8698f4a809ca9c5a595b8be47ac5f8f057442d6c78498b70e3f8",
+          "hunks": [
+            {
+              "id": "4bd1fd92-9d6d-4df9-b4bb-eb8e42fe4668:h1",
+              "line": 4,
+              "decision": "accept"
+            },
+            {
+              "id": "4bd1fd92-9d6d-4df9-b4bb-eb8e42fe4668:h2",
+              "line": 703,
+              "decision": "accept"
+            }
+          ]
+        }
+      ],
+      "appliedFiles": [
+        {
+          "path": "src/flask/cli.py",
+          "beforeSha256": "3df87bdbe07196fa07d101c20ce7351ef5c6ecaab95deb5fdf3ccdcf690d4879",
+          "afterSha256": "d3e216149f3f12bd634485aba997aa9d495744e0980ea061e2d68b5da805cfb1",
+          "documentVersion": 2,
+          "acceptedHunkIds": [
+            "a1ece1fa-c15f-4ac9-b3d3-c08cf58de63c:h1",
+            "a1ece1fa-c15f-4ac9-b3d3-c08cf58de63c:h2"
+          ]
+        },
+        {
+          "path": "docs/api.rst",
+          "beforeSha256": "08650a7a23f8b2f0ca46f52f66c79ae578fe105b33a6ee541c20bc6aa70e52c9",
+          "afterSha256": "9d7e5e5ae2588f4ffcecd65b38ff8c6dc2495139a08cac3dfba76c8c8c8b4b0e",
+          "documentVersion": 2,
+          "acceptedHunkIds": [
+            "0428e5c6-c991-4cfe-8151-883846a7da38:h1"
+          ]
+        },
+        {
+          "path": "docs/cli.rst",
+          "beforeSha256": "e8e5e9b220a5159e9c9c8b413de499aa5a51cd0ca487681e2352bbdf6f9b0cda",
+          "afterSha256": "3be7d998bb2fbfa4ff7822b2f1111b31b0e9abe1dd9d65c1d939a86481bf6131",
+          "documentVersion": 2,
+          "acceptedHunkIds": [
+            "a9df1923-49fb-48ba-8b3a-f06272310a67:h1"
+          ]
+        },
+        {
+          "path": "tests/test_cli.py",
+          "beforeSha256": "bc9b456bcd5c8698f4a809ca9c5a595b8be47ac5f8f057442d6c78498b70e3f8",
+          "afterSha256": "59975d1b6f69c6c88f805b71782c2c46ea57d0a868225d1544dce0a0483e7e7b",
+          "documentVersion": 2,
+          "acceptedHunkIds": [
+            "4bd1fd92-9d6d-4df9-b4bb-eb8e42fe4668:h1",
+            "4bd1fd92-9d6d-4df9-b4bb-eb8e42fe4668:h2"
+          ]
+        }
+      ]
+    }
+  ],
+  "verification": [
+    {
+      "id": "e3a7534b-1476-40c3-a073-3c60264527ae",
+      "status": "passed",
+      "executed": true,
+      "command": {
+        "executable": "/Users/Apple/Projects/SecureForge/handoff/.tmp/handoff/flask-b/.venv/bin/python",
+        "args": [
+          "-m",
+          "pytest",
+          "tests/test_cli.py",
+          "tests/test_secureforge_acceptance.py",
+          "-q"
+        ],
+        "cwd": "/Users/Apple/Projects/SecureForge/handoff/.tmp/handoff/flask-b",
+        "pythonSourcePath": "/Users/Apple/Projects/SecureForge/handoff/.tmp/handoff/flask-b/src",
+        "sources": [
+          {
+            "path": "tests/test_cli.py",
+            "sha256": "59975d1b6f69c6c88f805b71782c2c46ea57d0a868225d1544dce0a0483e7e7b"
+          },
+          {
+            "path": "tests/test_secureforge_acceptance.py",
+            "sha256": "5d2f97e1dd07cecc8811a7cc7d5bb70dcad6fb30bcf1ce940f61a6b103f5bf2f"
+          }
+        ],
+        "targets": [],
+        "timeoutMs": 30000
+      },
+      "exitCode": 0,
+      "signal": null,
+      "durationMs": 1113,
+      "output": "...................................................................      [100%]\n67 passed in 0.29s\n",
+      "truncated": false
+    }
+  ],
+  "security": [],
+  "proofs": [],
+  "uncertainties": [
+    "A passed command records execution, not complete correctness or security coverage.",
+    "Editor-buffer application and disk Save are separate operations.",
+    "This is recorded event evidence; later external edits or native Undo may require a fresh review.",
+    "Security findings remain candidates unless a specific controlled proof supports them.",
+    "Secret redaction is best effort; review an exported report before sharing it."
+  ]
+}

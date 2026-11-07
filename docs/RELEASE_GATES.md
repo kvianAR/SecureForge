@@ -3,18 +3,11 @@
 **Scope:** VS Code sidebar coding agent and guarded proposal/review workflow.
 This is a checklist, not a claim that the full real-model acceptance test passed.
 
-## Merge order
+## Current candidate and history
 
-These pull requests form an intentional dependency stack:
+The earlier dependency stack through PR #15 is integrated into main. PR #16 is the current handoff candidate. Its checkpoint log and evidence record independent fixes, successful acceptance runs and failed candidates. Check the actual head, complete diff and current CI before deciding whether to merge.
 
-1. [#8](https://github.com/S-h-u-b-h-1/SecureForge/pull/8) — guided Build and workspace confirmation; base `main`.
-2. [#9](https://github.com/S-h-u-b-h-1/SecureForge/pull/9) — native sidebar; initially based on #8.
-3. [#10](https://github.com/S-h-u-b-h-1/SecureForge/pull/10) — minimal secondary-sidebar chat; initially based on #9.
-4. [#11](https://github.com/S-h-u-b-h-1/SecureForge/pull/11) — runtime/verification outcome reliability; initially based on #10.
-5. [#12](https://github.com/S-h-u-b-h-1/SecureForge/pull/12) — wrong-repository fail-fast and recent-projects handoff; initially based on #11.
-6. Release editor/CI qualification — this branch, initially based on #12.
-
-**Do not merge the stack all at once.** After each preceding PR merges, retarget the next PR to `main`; inspect its changed files/diff against `main`; require fresh passing checks before merging. **Use merge commits to preserve ancestry for this stack.** Squashing a parent PR changes its commit identity and can make downstream PRs show previously reviewed changes again; if squash is required, first rebase each downstream branch carefully onto updated `main` and re-qualify it. Never force-push a shared branch without checking the affected PRs.
+Use a merge commit to preserve the reviewed branch ancestry. Keep draft status until the relevant release gates have been evaluated. Do not force-push the shared branch.
 
 ## Required automated checks
 
@@ -43,7 +36,7 @@ For the actual packaged VSIX: use VS Code's **Install from VSIX…** and reload 
 
 ## Required live model + Flask acceptance (not covered by CI)
 
-Use the existing pinned Flask checkout (`22d924701a6ae2e4cd01e9a15bbaf3946094af65`) with a clean Git working tree. The pre-fix Flask baseline was 90 passing and 3 skipped tests after installing the async extra; do not confuse this with SecureForge's npm suite.
+Use the existing pinned Flask checkout (`22d924701a6ae2e4cd01e9a15bbaf3946094af65`) with a clean Git working tree. The fresh handoff environment passed 93 baseline helper and CLI tests with its installed extras. Test counts depend on the environment; retain the actual output and import identity.
 
 - In a Node-only repo like AwaazGraph, the Flask environment-variable request must stop before contacting TrueForge, identify the current project, and offer **Recent projects** / **Browse folders**. No proposals and no changes.
 - Open the correct Flask checkout in VS Code. Confirm the sidebar displays the Flask working folder.

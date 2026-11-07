@@ -50,6 +50,16 @@ test('reviews reject tampered hashes, credential content, empty changes and over
   assert.throws(() => createReview(proposal('old', 'new', { status: 'applied' })), /pending/);
 });
 
+test('review accepts the same exact proposed test sentinels as staging while protecting original source', () => {
+  for (const value of ['0', 'None', 'null', 'True', 'False', '"***"', '"[REDACTED]"']) {
+    const proposed = `payload = {"password": ${value}}\n`;
+    const review = createReview(proposal('old\n', proposed));
+    assert.equal(composeAcceptedHunks(review, decide(review, 'accept'), 'old\n').content, proposed);
+  }
+  assert.throws(() => createReview(proposal('password = "***"\n', 'new\n')), /credentials/);
+  assert.throws(() => createReview(proposal('old\n', 'password = "0" "not-a-test-sentinel"\n')), /credentials/);
+});
+
 test('stale, missing and forged hunk decisions cannot apply', () => {
   const review = createReview(proposal('old', 'new'));
   assert.throws(() => composeAcceptedHunks(review, decide(review, 'accept'), 'edited'), /Stale/);

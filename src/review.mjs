@@ -1,5 +1,5 @@
 import { diffArrays } from 'diff';
-import { redactSecrets, sha256 } from './workspace.mjs';
+import { redactSecrets, hasProposedCredentialContent, sha256 } from './workspace.mjs';
 
 const MAX_BYTES = 256 * 1024;
 
@@ -21,9 +21,10 @@ export function createReview(proposal) {
     if (Buffer.byteLength(content) > MAX_BYTES || content.includes('\0')) {
       throw new Error('Review requires bounded UTF-8 text');
     }
-    if (redactSecrets(content) !== content) {
-      throw new Error('Review blocked because the content contains detected credentials');
-    }
+  }
+  if (redactSecrets(proposal.originalContent) !== proposal.originalContent ||
+      hasProposedCredentialContent(proposal.proposedContent)) {
+    throw new Error('Review blocked because the content contains detected credentials');
   }
   if (sha256(proposal.originalContent) !== proposal.baseSha256 ||
       sha256(proposal.proposedContent) !== proposal.proposedSha256) {

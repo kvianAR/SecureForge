@@ -1,0 +1,132 @@
+diff --git a/docs/cli.rst b/docs/cli.rst
+index a72e6d5..da98571 100644
+--- a/docs/cli.rst
++++ b/docs/cli.rst
+@@ -146,6 +146,16 @@ context will be active, and the app instance will be imported. ::
+ Use :meth:`~Flask.shell_context_processor` to add other automatic imports.
+ 
+ 
++Show the Config
++---------------
++
++To inspect the loaded configuration, use the :func:`config <cli.config_command>`
++command. It prints the configuration as JSON, with values for any key containing
++``SECRET``, ``PASSWORD``, ``TOKEN``, or ``KEY`` masked as ``"***"``. ::
++
++    $ flask --app hello config
++
++
+ .. _dotenv:
+ 
+ Environment Variables From dotenv
+diff --git a/src/flask/cli.py b/src/flask/cli.py
+index ed11f25..e536b31 100644
+--- a/src/flask/cli.py
++++ b/src/flask/cli.py
+@@ -594,6 +594,7 @@ class FlaskGroup(AppGroup):
+             self.add_command(run_command)
+             self.add_command(shell_command)
+             self.add_command(routes_command)
++            self.add_command(config_command)
+ 
+         self._loaded_plugin_commands = False
+ 
+@@ -1115,6 +1116,38 @@ def routes_command(sort: str, all_methods: bool) -> None:
+         click.echo(template.format(*row))
+ 
+ 
++_sensitive_keys = ("SECRET", "PASSWORD", "TOKEN", "KEY")
++
++
++def _mask_config_value(key: str, value: t.Any) -> t.Any:
++    if any(part in key.upper() for part in _sensitive_keys):
++        return "***"
++
++    return _sanitize_config_value(value)
++
++
++def _sanitize_config_value(value: t.Any) -> t.Any:
++    if isinstance(value, dict):
++        return {k: _mask_config_value(str(k), v) for k, v in value.items()}
++
++    if isinstance(value, (list, tuple)):
++        return [_sanitize_config_value(v) for v in value]
++
++    return value
++
++
++@click.command("config", short_help="Show the config for the app.")
++@with_appcontext
++def config_command() -> None:
++    """Show the app's configuration as JSON, masking sensitive values."""
++    redacted = {
++        k: _mask_config_value(str(k), v) for k, v in current_app.config.items()
++    }
++    click.echo(
++        current_app.json.dumps(redacted, sort_keys=True, indent=2, default=str)
++    )
++
++
+ cli = FlaskGroup(
+     name="flask",
+     help="""\
+diff --git a/tests/test_cli.py b/tests/test_cli.py
+index e254c1d..b622a53 100644
+--- a/tests/test_cli.py
++++ b/tests/test_cli.py
+@@ -1,6 +1,7 @@
+ # This file was part of Flask-CLI and was modified under the terms of
+ # its Revised BSD License. Copyright © 2015 CERN.
+ import importlib.metadata
++import json
+ import os
+ import platform
+ import ssl
+@@ -700,3 +701,47 @@ def test_cli_empty(app):
+ def test_run_exclude_patterns():
+     ctx = run_command.make_context("run", ["--exclude-patterns", __file__])
+     assert ctx.params["exclude_patterns"] == [__file__]
++
++
++class TestConfig:
++    @pytest.fixture
++    def config_app(self):
++        app = Flask(__name__)
++        app.config.update(
++            TEST_VALUE="plain",
++            SECRET_KEY=0,
++            MY_PASSWORD=0,
++            MY_TOKEN=0,
++            API_KEY=0,
++        )
++        app.config["NESTED"] = {"INNER_SECRET": 0, "VISIBLE": 1}
++        app.config["MY_LIST"] = [{"INNER_TOKEN": 0, "VISIBLE": 1}]
++        app.config["PLAIN_OBJ"] = 1j
++        return app
++
++    @pytest.fixture
++    def config_invoke(self, config_app, runner):
++        cli = FlaskGroup(create_app=lambda: config_app)
++        return partial(runner.invoke, cli)
++
++    def test_output_masks_secrets(self, config_invoke, config_app):
++        result = config_invoke(["config"])
++        assert result.exit_code == 0
++        data = json.loads(result.output)
++        assert data["TEST_VALUE"] == "plain"
++        assert data["SECRET_KEY"] == "***"
++        assert data["MY_PASSWORD"] == "***"
++        assert data["MY_TOKEN"] == "***"
++        assert data["API_KEY"] == "***"
++        assert data["NESTED"]["INNER_SECRET"] == "***"
++        assert data["NESTED"]["VISIBLE"] == 1
++        assert data["MY_LIST"][0]["INNER_TOKEN"] == "***"
++        assert data["MY_LIST"][0]["VISIBLE"] == 1
++        assert data["PLAIN_OBJ"] == str(1j)
++        assert config_app.config["SECRET_KEY"] == 0
++        assert config_app.config["NESTED"]["INNER_SECRET"] == 0
++
++    def test_help_lists_config(self, config_invoke):
++        result = config_invoke(["--help"])
++        assert result.exit_code == 0
++        assert "config" in result.output

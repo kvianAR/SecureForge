@@ -1,0 +1,40 @@
+{
+  "APPLICATION_ROOT": "/",
+  "DEBUG": false,
+  "EXPLAIN_TEMPLATE_LOADING": false,
+  "MAX_CONTENT_LENGTH": null,
+  "MAX_COOKIE_SIZE": 4093,
+  "MAX_FORM_MEMORY_SIZE": 500000,
+  "MAX_FORM_PARTS": 1000,
+  "NESTED": {
+    "api_token": "***",
+    "items": [
+      {
+        "password": "***"
+      }
+    ],
+    "ordinary": "visible"
+  },
+  "PERMANENT_SESSION_LIFETIME": "31 days, 0:00:00",
+  "PREFERRED_URL_SCHEME": "http",
+  "PROPAGATE_EXCEPTIONS": null,
+  "PROVIDE_AUTOMATIC_OPTIONS": true,
+  "SECRET_KEY": "***",
+  "SECRET_KEY_FALLBACKS": "***",
+  "SEND_FILE_MAX_AGE_DEFAULT": null,
+  "SERVER_NAME": null,
+  "SESSION_COOKIE_DOMAIN": null,
+  "SESSION_COOKIE_HTTPONLY": true,
+  "SESSION_COOKIE_NAME": "session",
+  "SESSION_COOKIE_PARTITIONED": false,
+  "SESSION_COOKIE_PATH": null,
+  "SESSION_COOKIE_SAMESITE": null,
+  "SESSION_COOKIE_SECURE": false,
+  "SESSION_REFRESH_EACH_REQUEST": true,
+  "TEMPLATES_AUTO_RELOAD": null,
+  "TESTING": false,
+  "TRAP_BAD_REQUEST_ERRORS": null,
+  "TRAP_HTTP_EXCEPTIONS": false,
+  "TRUSTED_HOSTS": null,
+  "USE_X_SENDFILE": false
+}

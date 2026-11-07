@@ -1,0 +1,29 @@
+Closed source refuses Apply
+            - button "Apply accepted hunks" [disabled] [ref=f10e26]
+            - button "Undo applied hunks" [disabled] [ref=f10e28]
+            - button "Apply accepted hunks" [disabled] [ref=f8e26]
+            - button "Undo applied hunks" [disabled] [ref=f8e28]
+            - button "Apply accepted hunks" [disabled] [ref=f12e26]
+            - button "Undo applied hunks" [disabled] [ref=f12e28]
+            - button "Recheck unchanged files" [ref=f12e30] [cursor=pointer]
+          - status [ref=f12e29]: "Stale proposal: document version changed or has unsaved edits Click Recheck unchanged files below. If the file's contents changed, save or revert and generate a new proposal; SecureForge will not overwrite it."
+
+Explicit Recheck reopens original source
+                    - tab "handoff_review.py, Editor Group 1" [selected] [ref=e1807] [cursor=pointer]:
+            - button "Apply accepted hunks" [disabled] [ref=f10e26]
+            - button "Undo applied hunks" [disabled] [ref=f10e28]
+            - button "Apply accepted hunks" [disabled] [ref=f8e26]
+            - button "Undo applied hunks" [disabled] [ref=f8e28]
+            - button "Apply accepted hunks" [ref=f12e26] [cursor=pointer]
+            - button "Undo applied hunks" [disabled] [ref=f12e28]
+          - status [ref=f12e29]: Source and clean editor buffers match the original proposal. Closed files were reopened safely. Review decisions are retained; apply only when ready.
+
+Separate Apply and Undo
+                    - tab "handoff_review.py, Editor Group 1" [selected] [ref=e1807] [cursor=pointer]:
+            - button "Apply accepted hunks" [disabled] [ref=f10e26]
+            - button "Undo applied hunks" [disabled] [ref=f10e28]
+            - button "Apply accepted hunks" [disabled] [ref=f8e26]
+            - button "Undo applied hunks" [disabled] [ref=f8e28]
+            - button "Apply accepted hunks" [disabled] [ref=f12e26]
+            - button "Undo applied hunks" [disabled] [ref=f12e28]
+          - status [ref=f12e29]: Accepted changes undone in the editor.

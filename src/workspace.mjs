@@ -58,6 +58,28 @@ export function redactSecrets(content) {
     .replace(/((?:api[_-]?key|access[_-]?token|auth[_-]?token|password|secret)["']?[ \t]*[:=][ \t]*\r?\n[ \t]+["']?)(?![\w.-]+["']?[ \t]*[:=])([^\s"',;]+)/gi, '$1[REDACTED]');
 }
 
+// Proposal-only screening. A generated masking test may use a literal
+// sentinel such as {"password": "***"} or {"api_key": 0}. The broad
+// read/search redactor intentionally treats those as credentials. Exempt
+// only these exact, non-secret sentinel values when screening *proposed*
+// bytes; never exempt arbitrary strings, numeric PINs, token signatures,
+// source reads, model context, or previously existing credential content.
+// This function never changes the bytes stored for the proposed edit.
+const PROPOSAL_EXAMPLE_ASSIGNMENT =
+  /(?:api[_-]?key|access[_-]?token|auth[_-]?token|password|secret)["']?[ \t]*[:=][ \t]*(?:(["'])([^"'\r\n]*)\1|([^\s"',;}\])]+))(?=[ \t]*(?:[,;})\]]|#|\/\/|\r?\n|$))/gi;
+const SAFE_EXAMPLE_VALUES = new Set(['***', '0', 'None', 'null', 'True', 'False', '[REDACTED]']);
+
+export function hasProposedCredentialContent(content) {
+  if (typeof content !== 'string') throw new TypeError('Proposed content must be text');
+  const screened = content.replace(PROPOSAL_EXAMPLE_ASSIGNMENT, (match, quote, quoted, unquoted) => {
+    // A sentinel must be the entire literal value. Do not exempt a safe
+    // prefix followed by string concatenation or another expression.
+    const literal = quoted ?? unquoted;
+    return SAFE_EXAMPLE_VALUES.has(literal) ? '[SAFE_TEST_SENTINEL]' : match;
+  });
+  return redactSecrets(screened) !== screened;
+}
+
 export class Workspace {
   constructor(root) {
     if (!root || typeof root !== 'string') throw new Error('Workspace root is required');

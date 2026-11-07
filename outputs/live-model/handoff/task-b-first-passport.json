@@ -1,0 +1,170 @@
+{
+  "schemaVersion": 1,
+  "id": "4a335f75-f703-477c-aa08-6219f319defe",
+  "createdAt": "2026-11-06T17:14:11.585Z",
+  "patches": [
+    {
+      "id": "01m6rx87kb4199fnhqb58wzky1",
+      "sessionId": "01m6rx87kb4199fnhqb58wzky1",
+      "recordedAt": "2026-11-06T17:11:39.568Z",
+      "status": "applied",
+      "actor": "local user review",
+      "files": [
+        {
+          "path": "src/flask/cli.py",
+          "baseSha256": "3df87bdbe07196fa07d101c20ce7351ef5c6ecaab95deb5fdf3ccdcf690d4879",
+          "hunks": [
+            {
+              "id": "b3233144-33c0-4ef9-a470-a67eb2292394:h1",
+              "line": 7,
+              "decision": "accept"
+            },
+            {
+              "id": "b3233144-33c0-4ef9-a470-a67eb2292394:h2",
+              "line": 597,
+              "decision": "accept"
+            },
+            {
+              "id": "b3233144-33c0-4ef9-a470-a67eb2292394:h3",
+              "line": 1118,
+              "decision": "accept"
+            }
+          ]
+        },
+        {
+          "path": "tests/test_cli.py",
+          "baseSha256": "bc9b456bcd5c8698f4a809ca9c5a595b8be47ac5f8f057442d6c78498b70e3f8",
+          "hunks": [
+            {
+              "id": "d11e8989-f651-4397-9b72-855fc87219ee:h1",
+              "line": 4,
+              "decision": "accept"
+            },
+            {
+              "id": "d11e8989-f651-4397-9b72-855fc87219ee:h2",
+              "line": 703,
+              "decision": "accept"
+            }
+          ]
+        },
+        {
+          "path": "docs/cli.rst",
+          "baseSha256": "e8e5e9b220a5159e9c9c8b413de499aa5a51cd0ca487681e2352bbdf6f9b0cda",
+          "hunks": [
+            {
+              "id": "ca43d260-bd5f-4c2d-b8e3-39f549fd39f1:h1",
+              "line": 149,
+              "decision": "accept"
+            }
+          ]
+        }
+      ],
+      "appliedFiles": [
+        {
+          "path": "src/flask/cli.py",
+          "beforeSha256": "3df87bdbe07196fa07d101c20ce7351ef5c6ecaab95deb5fdf3ccdcf690d4879",
+          "afterSha256": "bec483c0f8e1321c7ab0da5b867d784c29035d3da6729ac117cb09c4bcc71f90",
+          "documentVersion": 2,
+          "acceptedHunkIds": [
+            "b3233144-33c0-4ef9-a470-a67eb2292394:h1",
+            "b3233144-33c0-4ef9-a470-a67eb2292394:h2",
+            "b3233144-33c0-4ef9-a470-a67eb2292394:h3"
+          ]
+        },
+        {
+          "path": "tests/test_cli.py",
+          "beforeSha256": "bc9b456bcd5c8698f4a809ca9c5a595b8be47ac5f8f057442d6c78498b70e3f8",
+          "afterSha256": "b2681db55dc2633d7753274752db14d0577cec946a0e5af2f9f378652f366691",
+          "documentVersion": 2,
+          "acceptedHunkIds": [
+            "d11e8989-f651-4397-9b72-855fc87219ee:h1",
+            "d11e8989-f651-4397-9b72-855fc87219ee:h2"
+          ]
+        },
+        {
+          "path": "docs/cli.rst",
+          "beforeSha256": "e8e5e9b220a5159e9c9c8b413de499aa5a51cd0ca487681e2352bbdf6f9b0cda",
+          "afterSha256": "edbde941e9b5446ea7f745843af734c9d900cd1e8b71852d2e78af00c7a5a0f0",
+          "documentVersion": 2,
+          "acceptedHunkIds": [
+            "ca43d260-bd5f-4c2d-b8e3-39f549fd39f1:h1"
+          ]
+        }
+      ]
+    }
+  ],
+  "verification": [
+    {
+      "id": "a7881466-9a34-4cf1-a4e4-710359d2444a",
+      "status": "denied",
+      "executed": false,
+      "command": {
+        "executable": "/Users/Apple/Projects/SecureForge/handoff/.tmp/handoff/flask-b/.venv/bin/python",
+        "args": [
+          "-m",
+          "pytest",
+          "tests/test_cli.py",
+          "-q"
+        ],
+        "cwd": "/Users/Apple/Projects/SecureForge/handoff/.tmp/handoff/flask-b",
+        "pythonSourcePath": "/Users/Apple/Projects/SecureForge/handoff/.tmp/handoff/flask-b/src",
+        "sources": [
+          {
+            "path": "tests/test_cli.py",
+            "sha256": "bc9b456bcd5c8698f4a809ca9c5a595b8be47ac5f8f057442d6c78498b70e3f8"
+          }
+        ],
+        "targets": [],
+        "timeoutMs": 120000
+      },
+      "exitCode": null,
+      "signal": null,
+      "durationMs": null,
+      "output": "",
+      "truncated": false
+    },
+    {
+      "id": "9e6a48af-a197-491a-a38c-2e4e612da79e",
+      "status": "failed",
+      "executed": true,
+      "command": {
+        "executable": "/Users/Apple/Projects/SecureForge/handoff/.tmp/handoff/flask-b/.venv/bin/python",
+        "args": [
+          "-m",
+          "pytest",
+          "tests/test_cli.py",
+          "tests/test_secureforge_acceptance.py",
+          "-q"
+        ],
+        "cwd": "/Users/Apple/Projects/SecureForge/handoff/.tmp/handoff/flask-b",
+        "pythonSourcePath": "/Users/Apple/Projects/SecureForge/handoff/.tmp/handoff/flask-b/src",
+        "sources": [
+          {
+            "path": "tests/test_cli.py",
+            "sha256": "b2681db55dc2633d7753274752db14d0577cec946a0e5af2f9f378652f366691"
+          },
+          {
+            "path": "tests/test_secureforge_acceptance.py",
+            "sha256": "5d2f97e1dd07cecc8811a7cc7d5bb70dcad6fb30bcf1ce940f61a6b103f5bf2f"
+          }
+        ],
+        "targets": [],
+        "timeoutMs": 30000
+      },
+      "exitCode": 1,
+      "signal": null,
+      "durationMs": 798,
+      "output": "................................................................F.       [100%]\n=================================== FAILURES ===================================\n________________________ test_nested_sensitive_settings ________________________\n\n    def test_nested_sensitive_settings():\n        app = Flask(__name__)\n        app.config['NESTED'] = {'ordinary': 'visible', 'api_token': 0, 'items': [{'password': [REDACTED]\n        before = copy.deepcopy(dict(app.config))\n        result = CliRunner().invoke(FlaskGroup(create_app=lambda: app), ['config'])\n        assert result.exit_code == 0, result.output\n        values = json.loads(result.output)\n>       assert values['NESTED']['api_token'] == '***'\nE       AssertionError: assert 0 == '***'\n\ntests/test_secureforge_acceptance.py:35: AssertionError\n=========================== short test summary info ============================\nFAILED tests/test_secureforge_acceptance.py::test_nested_sensitive_settings\n1 failed, 65 passed in 0.24s\n",
+      "truncated": false
+    }
+  ],
+  "security": [],
+  "proofs": [],
+  "uncertainties": [
+    "A passed command records execution, not complete correctness or security coverage.",
+    "Editor-buffer application and disk Save are separate operations.",
+    "This is recorded event evidence; later external edits or native Undo may require a fresh review.",
+    "Security findings remain candidates unless a specific controlled proof supports them.",
+    "Secret redaction is best effort; review an exported report before sharing it."
+  ]
+}

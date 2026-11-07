@@ -1,54 +1,54 @@
-# SecureForge v0.1 — Build foundation and role handoff
+# SecureForge architecture
 
-## Current pipeline
+## Build flow
 
-```text
-User task (CLI; future VS Code editor)
-  -> TrueForge SDK session / turn stream (configured model in TrueForge)
-  -> registered local SecureForge MCP connector
-  -> read_file / search_workspace / lookup_symbol (bounded, no writes)
-  -> propose_edit (pending proposal in process memory, SHA-256 base check)
-  -> human review (Aditya-owned extension with live proposal delivery)
+```mermaid
+flowchart TD
+    U[VS Code task or inline selection] --> C[Bounded context selection]
+    C --> T[TrueForge SDK session and streamed turns]
+    T --> M[Temporary authenticated loopback MCP bridge]
+    M --> R[Workspace reads and model-driven discovery]
+    R --> A[Named staging permission]
+    A --> P[Hashed in-memory single-file or coordinated proposal]
+    P --> H[Independent hunk review]
+    H --> E[Guarded editor Apply and Undo]
+    E --> S[Explicit Save]
+    S --> V[Separately approved local test command]
+    V --> X[Patch Passport export]
 ```
 
-TrueForge is **always** the model/agent runtime. SecureForge does not call model providers directly.
+TrueForge supplies model routing, sessions, event streaming, tool dispatch and tool-approval pauses. SecureForge supplies repository policy, retrieval, proposal validation, editor review, local command confirmation and evidence. Model providers and their credentials are configured in TrueForge. SecureForge uses the official SDK and has no direct provider client.
 
-## Shared data contract (v1)
+## Context and proposal contracts
 
-`read_file` output:
+Automatic lexical retrieval ranks filenames and source matches, with test/documentation bonuses and explicit file/symbol attachments. It selects at most 12 excerpts under a default 24,000-byte source budget. Scans have independent file, byte and directory-entry budgets. Sources carry paths, reasons, line ranges and SHA-256 evidence.
 
-```json
-{"path":"src/main.py","sha256":"64-character hex digest","startLine":1,"endLine":20,"totalLines":100,"truncated":true,"redacted":false,"lines":[{"line":1,"text":"..."}]}
-```
+The model can use `discover_repository` for bounded ranking and literal import relationships. `read_source_bundle` returns 1–4 complete existing files under 96 KiB aggregate UTF-8. It preserves exact source text, uses the hardened workspace reader, and returns nothing if any member is denied. Multi-file snapshots are not atomic.
 
-`propose_edit` input:
+Single-file proposals require the exact source hash. Coordinated proposals support complete-file batches and compact unique-text replacements. Compact requests expand through the same batch store and source policy. Proposals remain in process memory. Proposal staging never writes source files.
 
-```json
-{"path":"src/main.py","expectedSha256":"64-character hex digest","proposedContent":"complete replacement file text","rationale":"Why this change is needed"}
-```
+## Trust boundaries
 
-`propose_edit` output: `{schemaVersion:1,id,path,baseSha256,proposedSha256,rationale,createdAt,status,originalBytes,proposedBytes}`. `get_proposal` returns the complete `originalContent` and `proposedContent` for a diff UI. `check_proposal` returns `{id,path,fresh,expectedSha256,currentSha256}` when the file is still readable.
+| Boundary | Enforcement | Limitation |
+| --- | --- | --- |
+| Repository to model | Canonical relative paths, restricted-path policy, no symlink components, descriptor-based reads, UTF-8 and size checks, best-effort credential screening | Unexpected secret formats and malicious instructions require caution |
+| Runtime to MCP | Loopback listener, temporary capability token, origin restrictions, advertised argument schemas and bounded tools | Minimal request/response MCP subset, no full interoperability claim |
+| Runtime to staging approval | Resolve tool identity from streamed model events, display the name and counter, refuse repeated refs, cap eight requests | Permission stages a proposal and does not approve editor application |
+| Proposal to editor | SHA-256 bases, clean-buffer/version checks, independent hunk decisions, one coordinated WorkspaceEdit | Apply changes buffers, Save remains separate |
+| Closed file to Recheck | Policy/hash preflight before reopen, post-open verification, whole-group validation | Filesystem changes are not an atomic multi-file transaction |
+| Test request to process | Allowlisted executable/argument shapes, exact-command approval, saved-buffer requirement, cancellation and timeout cleanup | Tests execute repository code with local-user authority |
+| Events to exported evidence | Patch decisions, applied hashes, bounded redacted command output and linked owned-fixture proof | Evidence is an event record, not a signature or guarantee of later state |
 
-**Important:** Proposal creation is not approval. Neither the TrueForge SDK nor MCP tools apply the edit. The local VS Code approval engine validates workspace ownership, compares the current document SHA-256 and editor version, shows hunk-level Accept/Reject, then applies **accepted hunks only** with `WorkspaceEdit`. It consumes live TrueForge proposals, a synthetic demo or exported full v1 proposal JSON. Coordinated groups reuse the upstream BatchProposalStore contract. The separate tool approval flag on `propose_edit` does not replace hunk approval. See [review setup](REVIEW.md).
+Linux reads pin directory components through `/proc/self/fd`. macOS uses `O_NOFOLLOW_ANY`. Supported reads reject traversal, absolute paths, sensitive paths, symlinks, binaries and oversized input. Search screens whole-file credential content before slicing results.
 
-## Current security boundaries
+Generated proposals may contain a small fixed set of harmless credential-test sentinels. The exemption applies only to complete literal values in newly proposed bytes. Original-source reads remain conservative. Screening remains best effort.
 
-- MCP listener binds to `127.0.0.1` and rejects non-local `Origin` values.
-- Only workspace-relative paths; Linux reads anchor each component to pinned directory descriptors through `/proc/self/fd`; macOS reads use kernel `O_NOFOLLOW_ANY`. File data is read through the checked descriptor to prevent symlink-swap escape. No symlink components, traversal, binary content or known credential files.
-- Maximum file size is 256 KiB; search and returned lines are bounded. These are **byte/character bounds**, not exact token budgets.
-- Full-file-context, best-effort secret redaction; a repository may contain secrets in unexpected formats. Proposals against files where our redactor masks content are blocked to avoid deleting credential literals. Never assume model-safe data classification.
-- No arbitrary shell runner, Git write tool, filesystem write tool or remote deployment tool.
-- The MCP bridge is a minimal local Streamable HTTP JSON-RPC implementation for the `2025-06-18` request/response subset; add official MCP SDK compatibility tests before claiming full interoperability.
+## Defend and Prove
 
-## Division and next integration gates
+Security Review is read-only and reports bounded pattern candidates with source hashes, evidence, impact, confidence and limitations. It does not prove exploitability for arbitrary repositories.
 
-| Gate | Owner | Acceptance evidence |
-|---|---|---|
-| Model event stream | Shubhaang | Real TrueForge `sessionId` + terminal `turn.done` |
-| Safe read/search/symbol | Shubhaang (Aditya security review) | Unit tests, tool-call trace, no secrets surfaced |
-| In-memory edit proposal | Shubhaang | Hash-based stale rejection; unchanged source tree |
-| Hunk approval and undo | Aditya | Mixed accept/reject, stale defense, editor undo |
-| Security review | Aditya | Owned vulnerable fixture and safe negative control |
-| Competition A/B/C | Both | Verbatim official prompts and prescribed checks |
+The owned traversal lab creates disposable vulnerable and safe controls. An approved baseline test must reproduce the expected failure. Its repair goes through regular hunk review, Apply and Save. A separately approved post-fix test must pass the same regression. Proof links receipt IDs, unchanged test hashes, before/after target hashes, the finding and approved proposal. Incomplete linkage produces an inconclusive result.
 
-Do not claim competition tasks complete based on unit tests alone. The official PDF and live editor acceptance are still needed.
+## Qualification
+
+The handoff progress log and `outputs/live-model/handoff` distinguish real-model installed UI checks from deterministic runtime fixtures and source-level regressions. CI does not run paid models. Official acceptance and submission require their own evidence.

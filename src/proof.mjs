@@ -1,18 +1,24 @@
 import path from 'node:path';
-import { mkdir, mkdtemp, lstat, copyFile } from 'node:fs/promises';
+import os from 'node:os';
+import { constants } from 'node:fs';
+import { mkdir, mkdtemp, copyFile, rm } from 'node:fs/promises';
 import { sha256 } from './workspace.mjs';
 
-export async function createOwnedLab(root) {
-  const temporary = path.join(root, '.tmp');
-  await mkdir(temporary, { recursive: true });
-  if ((await lstat(temporary)).isSymbolicLink()) throw new Error('Lab directory must not be a symlink');
-  const directory = await mkdtemp(path.join(temporary, 'security-lab-'));
-  await mkdir(path.join(directory, 'vulnerable'));
-  await mkdir(path.join(directory, 'safe'));
-  for (const relative of ['vulnerable/storage.mjs', 'safe/storage.mjs', 'regression.test.mjs']) {
-    await copyFile(new URL(`../fixtures/security-lab/${relative}`, import.meta.url), path.join(directory, relative));
+export async function createOwnedLab() {
+  // Keep fixture creation outside repository-controlled directory parents.
+  const directory = await mkdtemp(path.join(os.tmpdir(), 'secureforge-security-lab-'));
+  try {
+    await mkdir(path.join(directory, 'vulnerable'));
+    await mkdir(path.join(directory, 'safe'));
+    for (const relative of ['vulnerable/storage.mjs', 'safe/storage.mjs', 'regression.test.mjs']) {
+      await copyFile(new URL(`../fixtures/security-lab/${relative}`, import.meta.url),
+        path.join(directory, relative), constants.COPYFILE_EXCL);
+    }
+    return { root: directory, testPath: 'regression.test.mjs', targetPath: 'vulnerable/storage.mjs' };
+  } catch (error) {
+    await rm(directory, { recursive: true, force: true });
+    throw error;
   }
-  return { root: directory, testPath: 'regression.test.mjs', targetPath: 'vulnerable/storage.mjs' };
 }
 
 export function assessFixProof({ before, after, beforeSha256, afterContent, finding, approvedProposalId }) {

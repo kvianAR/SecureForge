@@ -77,6 +77,8 @@ export function registerAgentPanel(vscode, context, actions) {
       }
     });
     const workspaceLabel = (vscode.workspace?.workspaceFolders?.length === 1 ? vscode.workspace.workspaceFolders[0].uri.fsPath : 'Choose your target project when you run Build');
+    const escapeHtml = value => value.replaceAll('&', '&amp;').replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#39;');
     panel.webview.html = `<!doctype html><html lang="en"><head><meta charset="UTF-8">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'nonce-${nonce}'; script-src 'nonce-${nonce}'">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -144,7 +146,7 @@ textarea::placeholder{color:var(--vscode-input-placeholderForeground)}
 <button class="iconbtn" id="file" title="Attach a file" aria-label="Attach file"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 12.5 13.5 7a3.5 3.5 0 0 1 5 5L10 20.5a5.5 5.5 0 0 1-8-8l9-9"/></svg></button>
 <button class="iconbtn" id="symbol" title="Add symbol context" aria-label="Attach symbol"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-6 9 6-9 6-9-6Zm0 4 9 6 9-6M3 17l9 5 9-5"/></svg></button>
 <span class="spacer"></span>
-<span class="folder" title="${workspaceLabel.replace(/[&<>"']/g, '')}" aria-label="Current workspace"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h6l2 2h10v11H3z"/></svg><span>${workspaceLabel.split(/[\\/]/).filter(Boolean).at(-1) || 'Workspace'}</span></span>
+<span class="folder" title="${escapeHtml(workspaceLabel)}" aria-label="Current workspace"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h6l2 2h10v11H3z"/></svg><span>${escapeHtml(workspaceLabel.split(/[\\/]/).filter(Boolean).at(-1) || 'Workspace')}</span></span>
 <button class="iconbtn" id="cancel" title="Stop run" aria-label="Stop run" hidden>Stop</button>
 <button class="send" id="run" title="Send task" aria-label="Send task"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 13 0m-6-6 6 6-6 6"/></svg></button>
 </div></div>

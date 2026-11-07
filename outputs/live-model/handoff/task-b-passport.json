@@ -1,0 +1,135 @@
+{
+  "schemaVersion": 1,
+  "id": "9315e0dc-88b4-49ba-9ed6-c778da9b895f",
+  "createdAt": "2026-11-06T17:25:38.795Z",
+  "patches": [
+    {
+      "id": "01m6rxrf75c6w0bbftc9j5ds05",
+      "sessionId": "01m6rxrf75c6w0bbftc9j5ds05",
+      "recordedAt": "2026-11-06T17:23:38.532Z",
+      "status": "applied",
+      "actor": "local user review",
+      "files": [
+        {
+          "path": "src/flask/cli.py",
+          "baseSha256": "3df87bdbe07196fa07d101c20ce7351ef5c6ecaab95deb5fdf3ccdcf690d4879",
+          "hunks": [
+            {
+              "id": "79de0290-14cf-4058-a963-23a89f9d02e2:h1",
+              "line": 597,
+              "decision": "accept"
+            },
+            {
+              "id": "79de0290-14cf-4058-a963-23a89f9d02e2:h2",
+              "line": 1118,
+              "decision": "accept"
+            }
+          ]
+        },
+        {
+          "path": "docs/cli.rst",
+          "baseSha256": "e8e5e9b220a5159e9c9c8b413de499aa5a51cd0ca487681e2352bbdf6f9b0cda",
+          "hunks": [
+            {
+              "id": "cb13c623-fc5d-4758-93f7-b17264e91a52:h1",
+              "line": 149,
+              "decision": "accept"
+            }
+          ]
+        },
+        {
+          "path": "tests/test_cli.py",
+          "baseSha256": "bc9b456bcd5c8698f4a809ca9c5a595b8be47ac5f8f057442d6c78498b70e3f8",
+          "hunks": [
+            {
+              "id": "d32e9520-49a8-478d-bdc4-8ca6d05cf833:h1",
+              "line": 4,
+              "decision": "accept"
+            },
+            {
+              "id": "d32e9520-49a8-478d-bdc4-8ca6d05cf833:h2",
+              "line": 703,
+              "decision": "accept"
+            }
+          ]
+        }
+      ],
+      "appliedFiles": [
+        {
+          "path": "src/flask/cli.py",
+          "beforeSha256": "3df87bdbe07196fa07d101c20ce7351ef5c6ecaab95deb5fdf3ccdcf690d4879",
+          "afterSha256": "7ad51dbc75ade7261aab1967d25ca5424cae1a9b3f25172c96a18cc987958fbf",
+          "documentVersion": 2,
+          "acceptedHunkIds": [
+            "79de0290-14cf-4058-a963-23a89f9d02e2:h1",
+            "79de0290-14cf-4058-a963-23a89f9d02e2:h2"
+          ]
+        },
+        {
+          "path": "docs/cli.rst",
+          "beforeSha256": "e8e5e9b220a5159e9c9c8b413de499aa5a51cd0ca487681e2352bbdf6f9b0cda",
+          "afterSha256": "c63eeeeeea907c48a0f0ecbc60d986b5a9b37378a5c78f7448d99539be3891ea",
+          "documentVersion": 2,
+          "acceptedHunkIds": [
+            "cb13c623-fc5d-4758-93f7-b17264e91a52:h1"
+          ]
+        },
+        {
+          "path": "tests/test_cli.py",
+          "beforeSha256": "bc9b456bcd5c8698f4a809ca9c5a595b8be47ac5f8f057442d6c78498b70e3f8",
+          "afterSha256": "2d0d052f18cc3f742ca3067291d2c1eb546c8df03478ce00ab5f91e7660ad1e2",
+          "documentVersion": 2,
+          "acceptedHunkIds": [
+            "d32e9520-49a8-478d-bdc4-8ca6d05cf833:h1",
+            "d32e9520-49a8-478d-bdc4-8ca6d05cf833:h2"
+          ]
+        }
+      ]
+    }
+  ],
+  "verification": [
+    {
+      "id": "6dbcf6b5-8ba2-4cb8-8520-8a3deb377f5a",
+      "status": "passed",
+      "executed": true,
+      "command": {
+        "executable": "/Users/Apple/Projects/SecureForge/handoff/.tmp/handoff/flask-b/.venv/bin/python",
+        "args": [
+          "-m",
+          "pytest",
+          "tests/test_cli.py",
+          "tests/test_secureforge_acceptance.py",
+          "-q"
+        ],
+        "cwd": "/Users/Apple/Projects/SecureForge/handoff/.tmp/handoff/flask-b",
+        "pythonSourcePath": "/Users/Apple/Projects/SecureForge/handoff/.tmp/handoff/flask-b/src",
+        "sources": [
+          {
+            "path": "tests/test_cli.py",
+            "sha256": "2d0d052f18cc3f742ca3067291d2c1eb546c8df03478ce00ab5f91e7660ad1e2"
+          },
+          {
+            "path": "tests/test_secureforge_acceptance.py",
+            "sha256": "5d2f97e1dd07cecc8811a7cc7d5bb70dcad6fb30bcf1ce940f61a6b103f5bf2f"
+          }
+        ],
+        "targets": [],
+        "timeoutMs": 30000
+      },
+      "exitCode": 0,
+      "signal": null,
+      "durationMs": 853,
+      "output": "..................................................................       [100%]\n66 passed in 0.27s\n",
+      "truncated": false
+    }
+  ],
+  "security": [],
+  "proofs": [],
+  "uncertainties": [
+    "A passed command records execution, not complete correctness or security coverage.",
+    "Editor-buffer application and disk Save are separate operations.",
+    "This is recorded event evidence; later external edits or native Undo may require a fresh review.",
+    "Security findings remain candidates unless a specific controlled proof supports them.",
+    "Secret redaction is best effort; review an exported report before sharing it."
+  ]
+}

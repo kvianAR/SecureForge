@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { sha256, redactSecrets } from './workspace.mjs';
+import { sha256, redactSecrets, hasProposedCredentialContent } from './workspace.mjs';
 
 const MAX_PROPOSAL_BYTES = 256 * 1024;
 
@@ -24,6 +24,11 @@ export class ProposalStore {
       throw new Error('Source contains redacted credentials: proposal blocked to prevent destructive replacements');
     }
     if (original.raw === proposedContent) throw new Error('Proposal contains no changes');
+    // Keep full-file staging consistent with compact patch staging. Only
+    // literal harmless test sentinels are exempt, never real credentials.
+    if (hasProposedCredentialContent(proposedContent)) {
+      throw new Error('Credential-bearing proposed content excluded');
+    }
     if (this.#proposals.size >= this.limit) throw new Error('Too many pending proposals');
     const proposal = Object.freeze({
       schemaVersion: 1,

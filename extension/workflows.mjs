@@ -163,11 +163,24 @@ export function registerWorkflows(vscode, context) {
         output.appendLine(line.slice(0, 4000));
         broadcast({ type: 'activity', text: line.slice(0, 4000) });
       },
-      approveTool: async ({ sessionId }) => await vscode.window.showWarningMessage(
-        'Allow this TrueForge workspace-tool request?', { modal: true,
-          detail: `Session ${sessionId}. This permits local tool validation. Applying edits and executing commands require their separate local approvals.` },
-        'Allow request'
-      ) === 'Allow request',
+      approveTool: async ({ sessionId, toolName, index, limit }) => {
+        // The runtime's approval ref is resolved against its model.message.
+        // Never approve a tool whose identity could not be established.
+        if (!['propose_edit', 'propose_batch', 'propose_patch_batch', 'run_command'].includes(toolName)) {
+          output.appendLine('Unidentified TrueForge tool request was denied before execution.');
+          vscode.window.showWarningMessage('SecureForge denied an unidentified TrueForge tool request. Inspect Activity and retrieved files.');
+          return false;
+        }
+        const action = toolName === 'run_command'
+          ? 'The exact test command still requires a separate local confirmation before execution.'
+          : 'The tool can only stage an in-memory patch. Applying editor changes requires separate hunk approval.';
+        return await vscode.window.showWarningMessage(
+          `Allow TrueForge tool ${toolName}? (request ${index}/${limit})`,
+          { modal: true,
+            detail: `Session ${sessionId}.\n${action}\nIf this same request keeps appearing, Cancel the Build and inspect SecureForge Activity; do not approve indefinitely.` },
+          'Allow once'
+        ) === 'Allow once';
+      },
     });
     const run = activeRun;
     const previousReceipts = receipts.length;

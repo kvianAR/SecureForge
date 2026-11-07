@@ -7,6 +7,7 @@ import { Workspace, sha256 } from '../src/workspace.mjs';
 import { ProposalStore } from '../src/proposals.mjs';
 import { BatchProposalStore } from '../src/build/batches.mjs';
 import { proposePatchBatch } from '../src/build/patch-batch.mjs';
+import { createReview } from '../src/review.mjs';
 
 async function fixture(t) {
   const root = await mkdtemp(path.join(os.tmpdir(), 'sf-patch-'));
@@ -71,6 +72,58 @@ test('patch batches reject symlinks and recognized credential content', async t 
   await assert.rejects(proposePatchBatch({ ...f, edits: [f.edits[0], {
     ...f.edits[1], replacements: [{ oldText: 'beta', newText: credential }],
   }] }), /Credential/);
+});
+
+test('masking-code test placeholders can stage without weakening credential exclusion', async t => {
+  const f = await fixture(t);
+  // A valid security test needs to mention key names and "***" masks.
+  // These are synthetic test placeholders, not credential literals.
+  const sample = [
+    'def config_example():',
+    '    payload = {"password": 0, "api_key": "***", "secret": None}',
+    '    labels = ("SECRET", "PASSWORD", "TOKEN", "KEY")',
+    '    assert "***" in labels or payload["password"] == 0',
+    '',
+  ].join('\n');
+  const edits = [
+    f.edits[0],
+    { ...f.edits[1], replacements: [{ oldText: 'beta', newText: sample }] },
+  ];
+  const batch = await proposePatchBatch({ ...f, edits });
+  assert.equal(batch.fileCount, 2);
+  const proposal = f.proposals.getProposal(batch.proposals[1].id);
+  assert.ok(proposal.proposedContent.includes(sample));
+  assert.ok(createReview(proposal).hunks.length > 0);
+  assert.equal(await readFile(path.join(f.root, '1.py'), 'utf8'), f.originals[1]);
+  assert.equal((await f.batches.checkBatch(batch.id)).fresh, true);
+
+  const direct = await f.proposals.proposeEdit({
+    path: '1.py', expectedSha256: sha256(f.originals[1]), proposedContent: sample,
+  });
+  assert.equal(f.proposals.getProposal(direct.id).proposedContent, sample);
+  assert.ok(createReview(f.proposals.getProposal(direct.id)).hunks.length > 0);
+});
+
+test('real credential literals are still rejected by all proposal paths', async t => {
+  const f = await fixture(t);
+  for (const value of [
+    '{"password": "actual-secret-value"}',
+    'api_key = "definitely-not-a-placeholder"',
+    '{"password": 123456}',
+    'password = "0" "not-a-test-sentinel"',
+    'api_key = "***" + "not-a-test-sentinel"',
+    'secret = False or "not-a-test-sentinel"',
+    '"sk-' + 'a'.repeat(32) + '"',
+  ]) {
+    const edits = [f.edits[0], {
+      ...f.edits[1], replacements: [{ oldText: 'beta', newText: value }],
+    }];
+    await assert.rejects(proposePatchBatch({ ...f, edits }), /Credential-bearing proposed content excluded/);
+    await assert.rejects(f.proposals.proposeEdit({
+      path: '1.py', expectedSha256: sha256(f.originals[1]), proposedContent: value,
+    }), /Credential-bearing proposed content excluded/);
+  }
+  assert.equal(await readFile(path.join(f.root, '1.py'), 'utf8'), f.originals[1]);
 });
 
 test('cancellation after a source read publishes no batch', async t => {

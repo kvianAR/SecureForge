@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "166502b",
+  "flaskRevision": "22d924701a6ae2e4cd01e9a15bbaf3946094af65",
+  "runtime": "0.183.0",
+  "model": "meta-muse/muse-spark-1-3",
+  "session": "01m6rxrf75c6w0bbftc9j5ds05",
+  "interface": "Installed desktop VS Code extension, normal UI driven through Playwright CDP",
+  "promptSource": "scripts/flask-rehearsal.py TASK_B verbatim, without file mentions",
+  "toolCounts": {
+    "discover_repository": 1,
+    "read_source_bundle": 1,
+    "search_workspace": 6,
+    "read_file": 11,
+    "propose_patch_batch": 1
+  },
+  "stagingApprovals": 1,
+  "files": 3,
+  "hunks": 5,
+  "normalApprovedVerification": {
+    "passed": 66,
+    "failed": 0,
+    "exitCode": 0
+  },
+  "independentTerminalVerification": {
+    "passed": 101,
+    "failed": 0,
+    "exitCode": 0
+  },
+  "checks": {
+    "recursiveMasking": true,
+    "caseInsensitiveKeys": true,
+    "defaultTimedeltaJson": true,
+    "applicationConfigUnchanged": true,
+    "cliHelpRegistration": true,
+    "savedHashesMatchPassport": true,
+    "guardedUndoAndSaveRestoredTrackedFiles": false,
+    "guardedUndoRefusedClosedDocuments": true
+  },
+  "limitations": [
+    "UI interactions are automated, not a human-operated official recording.",
+    "Source tabs were deliberately closed before Apply. Documents remained available for Apply but later closed after saving; guarded Undo correctly refused the closed-document state. This run does not qualify successful closed-document Recheck or Undo recovery.",
+    "The earlier three-file candidate failed nested masking and remains recorded separately.",
+    "Flask patch excerpts retain the upstream BSD license in outputs/flask-rehearsal/FLASK-LICENSE.txt.",
+    "The generated CLI documentation references cli.config_command, but the candidate did not add its API autodata entry. A full Sphinx build has not been qualified. Follow-up documentation qualification remains open."
+  ],
+  "restoration": "After preserving evidence, original tracked files restored with git restore in the disposable checkout."
+}

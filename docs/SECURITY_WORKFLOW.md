@@ -9,7 +9,7 @@ Open the repository in desktop VS Code, run `npm ci`, then press F5 with **Run S
 - **SecureForge: Run Approved Verification** requests explicit Node test or Python pytest execution.
 - **SecureForge: Cancel Agent Run** cancels the active local agent workflow and requests server cancellation.
 - **SecureForge: Security Review** runs a read-only review of the active saved file or a bounded workspace scope.
-- **SecureForge: Start Owned Security Lab** creates disposable positive and negative fixtures under the selected workspace's `.tmp/` directory and offers the controlled repair flow.
+- **SecureForge: Start Owned Security Lab** creates disposable positive and negative fixtures in a fresh private operating-system temporary directory and offers the controlled repair flow.
 - **SecureForge: Verify Security Fix** runs the saved lab regression after a reviewed fix.
 - **SecureForge: Export Patch Passport** saves recorded patch decisions, command receipts, findings, proof links and limitations as local JSON.
 

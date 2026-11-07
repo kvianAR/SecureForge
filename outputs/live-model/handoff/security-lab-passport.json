@@ -1,0 +1,291 @@
+{
+  "schemaVersion": 1,
+  "id": "e2ca3175-1137-4fa2-981c-76d2bf044574",
+  "createdAt": "2026-11-06T17:32:54.378Z",
+  "patches": [
+    {
+      "id": "01m6rxrf75c6w0bbftc9j5ds05",
+      "sessionId": "01m6rxrf75c6w0bbftc9j5ds05",
+      "recordedAt": "2026-11-06T17:23:38.532Z",
+      "status": "applied",
+      "actor": "local user review",
+      "files": [
+        {
+          "path": "src/flask/cli.py",
+          "baseSha256": "3df87bdbe07196fa07d101c20ce7351ef5c6ecaab95deb5fdf3ccdcf690d4879",
+          "hunks": [
+            {
+              "id": "79de0290-14cf-4058-a963-23a89f9d02e2:h1",
+              "line": 597,
+              "decision": "accept"
+            },
+            {
+              "id": "79de0290-14cf-4058-a963-23a89f9d02e2:h2",
+              "line": 1118,
+              "decision": "accept"
+            }
+          ]
+        },
+        {
+          "path": "docs/cli.rst",
+          "baseSha256": "e8e5e9b220a5159e9c9c8b413de499aa5a51cd0ca487681e2352bbdf6f9b0cda",
+          "hunks": [
+            {
+              "id": "cb13c623-fc5d-4758-93f7-b17264e91a52:h1",
+              "line": 149,
+              "decision": "accept"
+            }
+          ]
+        },
+        {
+          "path": "tests/test_cli.py",
+          "baseSha256": "bc9b456bcd5c8698f4a809ca9c5a595b8be47ac5f8f057442d6c78498b70e3f8",
+          "hunks": [
+            {
+              "id": "d32e9520-49a8-478d-bdc4-8ca6d05cf833:h1",
+              "line": 4,
+              "decision": "accept"
+            },
+            {
+              "id": "d32e9520-49a8-478d-bdc4-8ca6d05cf833:h2",
+              "line": 703,
+              "decision": "accept"
+            }
+          ]
+        }
+      ],
+      "appliedFiles": [
+        {
+          "path": "src/flask/cli.py",
+          "beforeSha256": "3df87bdbe07196fa07d101c20ce7351ef5c6ecaab95deb5fdf3ccdcf690d4879",
+          "afterSha256": "7ad51dbc75ade7261aab1967d25ca5424cae1a9b3f25172c96a18cc987958fbf",
+          "documentVersion": 2,
+          "acceptedHunkIds": [
+            "79de0290-14cf-4058-a963-23a89f9d02e2:h1",
+            "79de0290-14cf-4058-a963-23a89f9d02e2:h2"
+          ]
+        },
+        {
+          "path": "docs/cli.rst",
+          "beforeSha256": "e8e5e9b220a5159e9c9c8b413de499aa5a51cd0ca487681e2352bbdf6f9b0cda",
+          "afterSha256": "c63eeeeeea907c48a0f0ecbc60d986b5a9b37378a5c78f7448d99539be3891ea",
+          "documentVersion": 2,
+          "acceptedHunkIds": [
+            "cb13c623-fc5d-4758-93f7-b17264e91a52:h1"
+          ]
+        },
+        {
+          "path": "tests/test_cli.py",
+          "beforeSha256": "bc9b456bcd5c8698f4a809ca9c5a595b8be47ac5f8f057442d6c78498b70e3f8",
+          "afterSha256": "2d0d052f18cc3f742ca3067291d2c1eb546c8df03478ce00ab5f91e7660ad1e2",
+          "documentVersion": 2,
+          "acceptedHunkIds": [
+            "d32e9520-49a8-478d-bdc4-8ca6d05cf833:h1",
+            "d32e9520-49a8-478d-bdc4-8ca6d05cf833:h2"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "537bd3db-4bdb-4e8e-bb43-5b39213afb4b",
+      "sessionId": null,
+      "recordedAt": "2026-11-06T17:32:13.381Z",
+      "status": "applied",
+      "actor": "local user review",
+      "files": [
+        {
+          "path": "vulnerable/storage.mjs",
+          "baseSha256": "e46e8d4d3e593db8db5fc881043edee9cec00a964c2eac6ba43218a59a6a107e",
+          "hunks": [
+            {
+              "id": "537bd3db-4bdb-4e8e-bb43-5b39213afb4b:h1",
+              "line": 1,
+              "decision": "accept"
+            },
+            {
+              "id": "537bd3db-4bdb-4e8e-bb43-5b39213afb4b:h2",
+              "line": 4,
+              "decision": "accept"
+            },
+            {
+              "id": "537bd3db-4bdb-4e8e-bb43-5b39213afb4b:h3",
+              "line": 6,
+              "decision": "accept"
+            }
+          ]
+        }
+      ],
+      "appliedFiles": [
+        {
+          "path": "vulnerable/storage.mjs",
+          "beforeSha256": "e46e8d4d3e593db8db5fc881043edee9cec00a964c2eac6ba43218a59a6a107e",
+          "afterSha256": "f8952d1a5d4c54f70fecef342744a72b5f4bc34c29c348535ad080cee536d99f",
+          "documentVersion": 2,
+          "acceptedHunkIds": [
+            "537bd3db-4bdb-4e8e-bb43-5b39213afb4b:h1",
+            "537bd3db-4bdb-4e8e-bb43-5b39213afb4b:h2",
+            "537bd3db-4bdb-4e8e-bb43-5b39213afb4b:h3"
+          ]
+        }
+      ]
+    }
+  ],
+  "verification": [
+    {
+      "id": "6dbcf6b5-8ba2-4cb8-8520-8a3deb377f5a",
+      "status": "passed",
+      "executed": true,
+      "command": {
+        "executable": "/Users/Apple/Projects/SecureForge/handoff/.tmp/handoff/flask-b/.venv/bin/python",
+        "args": [
+          "-m",
+          "pytest",
+          "tests/test_cli.py",
+          "tests/test_secureforge_acceptance.py",
+          "-q"
+        ],
+        "cwd": "/Users/Apple/Projects/SecureForge/handoff/.tmp/handoff/flask-b",
+        "pythonSourcePath": "/Users/Apple/Projects/SecureForge/handoff/.tmp/handoff/flask-b/src",
+        "sources": [
+          {
+            "path": "tests/test_cli.py",
+            "sha256": "2d0d052f18cc3f742ca3067291d2c1eb546c8df03478ce00ab5f91e7660ad1e2"
+          },
+          {
+            "path": "tests/test_secureforge_acceptance.py",
+            "sha256": "5d2f97e1dd07cecc8811a7cc7d5bb70dcad6fb30bcf1ce940f61a6b103f5bf2f"
+          }
+        ],
+        "targets": [],
+        "timeoutMs": 30000
+      },
+      "exitCode": 0,
+      "signal": null,
+      "durationMs": 853,
+      "output": "..................................................................       [100%]\n66 passed in 0.27s\n",
+      "truncated": false
+    },
+    {
+      "id": "d6e05c04-2d2f-4615-8fcb-16fcc792f34d",
+      "status": "failed",
+      "executed": true,
+      "command": {
+        "executable": "/usr/local/bin/node",
+        "args": [
+          "--test",
+          "--test-reporter=tap",
+          "regression.test.mjs"
+        ],
+        "cwd": "/Users/Apple/Projects/SecureForge/handoff/.tmp/handoff/flask-b/.tmp/security-lab-DPL1Bc",
+        "sources": [
+          {
+            "path": "regression.test.mjs",
+            "sha256": "84cc6496ed8173c31953b79f4a44e71503ac231e888063d63072885aa0d19a11"
+          }
+        ],
+        "targets": [
+          {
+            "path": "vulnerable/storage.mjs",
+            "sha256": "e46e8d4d3e593db8db5fc881043edee9cec00a964c2eac6ba43218a59a6a107e"
+          }
+        ],
+        "timeoutMs": 30000
+      },
+      "exitCode": 1,
+      "signal": null,
+      "durationMs": 154,
+      "output": "TAP version 13\n# Subtest: permitted notes remain readable\nok 1 - permitted notes remain readable\n  ---\n  duration_ms: 3.6535\n  type: 'test'\n  ...\n# Subtest: a parent-directory path cannot read outside the notes root\nnot ok 2 - a parent-directory path cannot read outside the notes root\n  ---\n  duration_ms: 1.646917\n  type: 'test'\n  location: '/Users/Apple/Projects/SecureForge/handoff/.tmp/handoff/flask-b/.tmp/security-lab-DPL1Bc/regression.test.mjs:23:1'\n  failureType: 'testCodeFailure'\n  error: 'Missing expected exception.'\n  code: 'ERR_ASSERTION'\n  name: 'AssertionError'\n  operator: 'throws'\n  stack: |-\n    TestContext.<anonymous> (file:///Users/Apple/Projects/SecureForge/handoff/.tmp/handoff/flask-b/.tmp/security-lab-DPL1Bc/regression.test.mjs:25:10)\n    Test.runInAsyncScope (node:async_hooks:214:14)\n    Test.run (node:internal/test_runner/test:1081:25)\n    Test.processPendingSubtests (node:internal/test_runner/test:763:18)\n    Test.postRun (node:internal/test_runner/test:1210:19)\n    Test.run (node:internal/test_runner/test:1138:12)\n    async startSubtestAfterBootstrap (node:internal/test_runner/harness:332:3)\n  ...\n# Subtest: an absolute path cannot read outside the notes root\nok 3 - an absolute path cannot read outside the notes root\n  ---\n  duration_ms: 0.981834\n  type: 'test'\n  ...\n# Subtest: a symlink cannot read outside the notes root\nnot ok 4 - a symlink cannot read outside the notes root\n  ---\n  duration_ms: 1.366416\n  type: 'test'\n  location: '/Users/Apple/Projects/SecureForge/handoff/.tmp/handoff/flask-b/.tmp/security-lab-DPL1Bc/regression.test.mjs:33:1'\n  failureType: 'testCodeFailure'\n  error: 'Missing expected exception.'\n  code: 'ERR_ASSERTION'\n  name: 'AssertionError'\n  operator: 'throws'\n  stack: |-\n    TestContext.<anonymous> (file:///Users/Apple/Projects/SecureForge/handoff/.tmp/handoff/flask-b/.tmp/security-lab-DPL1Bc/regression.test.mjs:36:10)\n    Test.runInAsyncScope (node:async_hooks:214:14)\n    Test.run (node:internal/test_runner/test:1081:25)\n    Test.processPendingSubtests (node:internal/test_runner/test:763:18)\n    Test.postRun (node:internal/test_runner/test:1210:19)\n    Test.run (node:internal/test_runner/test:1138:12)\n    async Test.processPendingSubtests (node:internal/test_runner/test:763:7)\n  ...\n1..4\n# tests 4\n# suites 0\n# pass 2\n# fail 2\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 81.911333\n",
+      "truncated": false
+    },
+    {
+      "id": "346e1952-5779-4f1a-9ab5-b465509c03c1",
+      "status": "passed",
+      "executed": true,
+      "command": {
+        "executable": "/usr/local/bin/node",
+        "args": [
+          "--test",
+          "--test-reporter=tap",
+          "regression.test.mjs"
+        ],
+        "cwd": "/Users/Apple/Projects/SecureForge/handoff/.tmp/handoff/flask-b/.tmp/security-lab-DPL1Bc",
+        "sources": [
+          {
+            "path": "regression.test.mjs",
+            "sha256": "84cc6496ed8173c31953b79f4a44e71503ac231e888063d63072885aa0d19a11"
+          }
+        ],
+        "targets": [
+          {
+            "path": "vulnerable/storage.mjs",
+            "sha256": "f8952d1a5d4c54f70fecef342744a72b5f4bc34c29c348535ad080cee536d99f"
+          }
+        ],
+        "timeoutMs": 30000
+      },
+      "exitCode": 0,
+      "signal": null,
+      "durationMs": 223,
+      "output": "TAP version 13\n# Subtest: permitted notes remain readable\nok 1 - permitted notes remain readable\n  ---\n  duration_ms: 7.622125\n  type: 'test'\n  ...\n# Subtest: a parent-directory path cannot read outside the notes root\nok 2 - a parent-directory path cannot read outside the notes root\n  ---\n  duration_ms: 2.262792\n  type: 'test'\n  ...\n# Subtest: an absolute path cannot read outside the notes root\nok 3 - an absolute path cannot read outside the notes root\n  ---\n  duration_ms: 1.862167\n  type: 'test'\n  ...\n# Subtest: a symlink cannot read outside the notes root\nok 4 - a symlink cannot read outside the notes root\n  ---\n  duration_ms: 1.667125\n  type: 'test'\n  ...\n1..4\n# tests 4\n# suites 0\n# pass 4\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 147.92675\n",
+      "truncated": false
+    }
+  ],
+  "security": [
+    {
+      "id": "e2d0ed35-c277-42f7-a3ae-5284ebdffde3",
+      "createdAt": "2026-11-06T17:30:43.145Z",
+      "mode": "read-only static review",
+      "sources": [
+        {
+          "path": "vulnerable/storage.mjs",
+          "sha256": "e46e8d4d3e593db8db5fc881043edee9cec00a964c2eac6ba43218a59a6a107e"
+        },
+        {
+          "path": "safe/storage.mjs",
+          "sha256": "f8952d1a5d4c54f70fecef342744a72b5f4bc34c29c348535ad080cee536d99f"
+        }
+      ],
+      "findings": [
+        {
+          "id": "8cc72ed8-78aa-4d01-8f03-092d54be42d2",
+          "ruleId": "SF-PATH-001",
+          "title": "Joined filename reaches a filesystem read",
+          "path": "vulnerable/storage.mjs",
+          "line": 6,
+          "sourceSha256": "e46e8d4d3e593db8db5fc881043edee9cec00a964c2eac6ba43218a59a6a107e",
+          "evidence": "  return readFileSync(join(root, userPath), 'utf8');",
+          "impact": "A user-controlled filename may escape the intended directory through parent paths or symlinks.",
+          "confidence": "medium",
+          "status": "verified_on_owned_fixture",
+          "verification": "controlled_regression",
+          "limitation": "Pattern-based candidate. Caller-controlled input and surrounding safeguards require inspection."
+        }
+      ],
+      "skipped": [],
+      "limitations": [
+        "Four narrow pattern checks and bounded lexical Python input traces; no complete authorization or interprocedural analysis.",
+        "No finding is labelled exploitable without separate evidence.",
+        "Excluded files, budgets and unsupported patterns limit coverage."
+      ]
+    }
+  ],
+  "proofs": [
+    {
+      "findingId": "8cc72ed8-78aa-4d01-8f03-092d54be42d2",
+      "proposalId": "537bd3db-4bdb-4e8e-bb43-5b39213afb4b",
+      "status": "verified_on_owned_fixture",
+      "beforeReceiptId": "d6e05c04-2d2f-4615-8fcb-16fcc792f34d",
+      "afterReceiptId": "346e1952-5779-4f1a-9ab5-b465509c03c1",
+      "beforeSha256": "e46e8d4d3e593db8db5fc881043edee9cec00a964c2eac6ba43218a59a6a107e",
+      "afterSha256": "f8952d1a5d4c54f70fecef342744a72b5f4bc34c29c348535ad080cee536d99f",
+      "limitation": "Evidence covers the owned regression cases under these local conditions. Concurrent path replacement is outside this fixture."
+    }
+  ],
+  "uncertainties": [
+    "A passed command records execution, not complete correctness or security coverage.",
+    "Editor-buffer application and disk Save are separate operations.",
+    "This is recorded event evidence; later external edits or native Undo may require a fresh review.",
+    "Security findings remain candidates unless a specific controlled proof supports them.",
+    "Secret redaction is best effort; review an exported report before sharing it."
+  ]
+}

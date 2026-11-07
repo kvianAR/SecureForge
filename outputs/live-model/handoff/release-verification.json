@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "codeCommit": "1a08ad157046230f509a5fb3772e3fdbcf6b147f",
+  "extensionVersion": "0.1.4",
+  "runtimeVersion": "0.183.0",
+  "sdkVersion": "0.182.0",
+  "unitTests": 153,
+  "syntaxChecks": "passed",
+  "cleanClone": {
+    "commit": "ff1ccc0",
+    "installation": "npm ci",
+    "unitTests": 152,
+    "syntax": "passed",
+    "package": "passed",
+    "latestFreshCi": {
+      "commit": "398ed78",
+      "run": 42358579511,
+      "unitTests": 153,
+      "platforms": [
+        "Ubuntu Node22",
+        "macOS Node26"
+      ]
+    }
+  },
+  "packagedEditorChecks": [
+    "Extension activation, sidebar registration and focus command",
+    "Mixed hunk decisions apply only the accepted edit in the editor",
+    "Repeated application is rejected",
+    "Guarded review Undo restores the original content",
+    "Changed document version is rejected even after Undo",
+    "Rejecting all hunks preserves content",
+    "External disk changes are preserved",
+    "Unicode, CRLF and missing final newline survive editor apply and Undo",
+    "One WorkspaceEdit applies a batch and one guarded Undo reverses both files",
+    "A stale member blocks the entire multi-file apply",
+    "Cancellation before batch apply preserves all documents",
+    "Owned security finding, editor-reviewed fix, saved regression proof and Patch Passport agree"
+  ],
+  "packagedEditorRuntimeChecks": [
+    "Extension activation, sidebar registration and focus command",
+    "Mixed hunk decisions apply only the accepted edit in the editor",
+    "Repeated application is rejected",
+    "Guarded review Undo restores the original content",
+    "Changed document version is rejected even after Undo",
+    "Rejecting all hunks preserves content",
+    "External disk changes are preserved",
+    "Unicode, CRLF and missing final newline survive editor apply and Undo",
+    "One WorkspaceEdit applies a batch and one guarded Undo reverses both files",
+    "A stale member blocks the entire multi-file apply",
+    "Cancellation before batch apply preserves all documents",
+    "Owned security finding, editor-reviewed fix, saved regression proof and Patch Passport agree",
+    "Normal Build command delivers a real runtime proposal into review using fixture editor surfaces",
+    "Real TrueForge session 01m6tm4hxzdrvc3qpqxw5eqq7x delivers a proposal into the editor (deterministic inference fixture)"
+  ],
+  "runtimeTransport": "Both full-file and compact-batch modes passed with deterministic inference",
+  "bundleSha256": "1b72c2d79911ca70d4c71b5a0e056442b52cb2984540697ca110db89f94fe153",
+  "vsixSha256": "cebd0cd2e37b965ebc7732db8b450722f20b24c31b6826bd9670026be834c4f6",
+  "installedBundleMatches": true,
+  "vulnerabilities": {
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 0,
+    "critical": 0,
+    "total": 0
+  },
+  "limitations": [
+    "Test-host checks use an actual installed extension and labelled source-level/fixture surfaces. They do not independently repeat every real-model task.",
+    "Real Muse installed UI A/B/C and security proof are recorded separately in this directory.",
+    "Dependency audit reports known registry advisories, not complete code security.",
+    "VSIX is generated and ignored; identify it by version, code commit and hashes."
+  ],
+  "ci": {
+    "commit": "398ed78",
+    "run": 42358579511,
+    "ubuntu": "passed",
+    "macos": "passed",
+    "downloadedArtifactVersion": "0.1.4",
+    "downloadedBundleMatchesInstalled": true
+  },
+  "runtimeRetry": "First wire attempt could not connect because local TrueForge was stopped. Restarted same runtime version with existing config, then packaged wire and both transport modes passed.",
+  "documentationCommit": "398ed78"
+}

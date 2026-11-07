@@ -2,7 +2,7 @@
   "name": "secureforge-review",
   "displayName": "SecureForge",
   "publisher": "secureforge",
-  "version": "0.1.1",
+  "version": "0.1.4",
   "private": true,
   "description": "SecureForge coding agent with a persistent sidebar and human-approved patch review.",
   "engines": {

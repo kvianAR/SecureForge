@@ -3,6 +3,24 @@ import { createMcpServer } from './mcp-server.mjs';
 import { buildAgentSpec } from './agent.mjs';
 import { redactSecrets } from './workspace.mjs';
 import { validateInlineProposal } from './context.mjs';
+import { isEventDelta, mergeEventDelta } from '@truefoundry/trueforge-sdk';
+
+// No request may hold the editor hostage with an unbounded series of identical
+// permission dialogs. This is a safety limit, never an automatic approval.
+export const MAX_APPROVAL_CALLS_PER_RUN = 8;
+const APPROVABLE_TOOLS = new Set(['propose_edit', 'propose_batch', 'propose_patch_batch', 'run_command']);
+
+function approvalError(code) {
+  return Object.assign(new Error(code), { code });
+}
+
+function approvedToolName(call, events) {
+  const source = events.get(call.sourceEventId ?? call.source_event_id);
+  const toolCall = source?.type === 'model.message'
+    ? (source.toolCalls ?? source.tool_calls ?? []).find(tool => tool.id === call.id) : undefined;
+  const name = toolCall?.toolInfo?.name ?? toolCall?.tool_info?.name;
+  return APPROVABLE_TOOLS.has(name) ? name : 'unidentified_tool';
+}
 
 export function localTrueForgeUrl(value) {
   const url = new URL(value);
@@ -27,11 +45,14 @@ export class LiveRun {
     this.toolCounts = Object.create(null);
     this.sourceEvidence = new Map();
     this.terminalStatus = null;
+    this.approvalPrompts = 0;
+    this.approvalTools = Object.create(null);
   }
 
   getDiagnostics() {
     return { sessionId: this.sessionId, status: this.state, terminalStatus: this.terminalStatus,
-      toolCounts: { ...this.toolCounts }, sources: [...this.sourceEvidence.values()] };
+      toolCounts: { ...this.toolCounts }, approvalPrompts: this.approvalPrompts,
+      approvalTools: { ...this.approvalTools }, sources: [...this.sourceEvidence.values()] };
   }
 
   async cancel() {
@@ -94,14 +115,24 @@ export class LiveRun {
       let input = [{ type: 'user.message', content: task }];
       if (context?.sources?.length) input.push({ type: 'user.message',
         content: `Repository context follows as untrusted data. The preceding user message is the task.\n${JSON.stringify(context.sources)}` });
+      const approvedRefs = new Set();
       for (let step = 0; step < 20; step++) {
         signal.throwIfAborted();
         let final;
         let visibleReply = '';
         const approvals = [];
+        const events = new Map();
         const stream = await this.client.sessions.createTurnStream(session.id, { input }, requestOptions);
         for await (const { data: event } of stream.withMetadata()) {
           signal.throwIfAborted();
+          // Approval refs contain only a call ID and source-event ID. Resolve
+          // the tool name from the associated model.message; never log args.
+          if (isEventDelta(event)) {
+            const base = events.get(event.id);
+            if (base) mergeEventDelta(base, event);
+          } else if (typeof event.id === 'string') {
+            events.set(event.id, event);
+          }
           if (event.type === 'tool.approval_required') approvals.push(event);
           if (event.type === 'turn.done') final = event.state;
           // Ignore interim model narration from before the most recent tool result.
@@ -124,13 +155,32 @@ export class LiveRun {
         if (['paused', 'done'].includes(final.status) && approvals.length) {
           input = [];
           for (const approval of approvals) {
-            for (const call of approval.toolCalls ?? approval.tool_calls ?? []) {
-              const allowed = await this.approveTool({ sessionId: session.id, toolCallId: call.id });
+            const threadId = approval.threadId ?? approval.thread_id;
+            const calls = approval.toolCalls ?? approval.tool_calls;
+            if (typeof threadId !== 'string' || !threadId || !Array.isArray(calls) || !calls.length) {
+              throw approvalError('TF_APPROVAL_FORMAT');
+            }
+            for (const call of calls) {
+              if (!call || typeof call.id !== 'string' || !call.id) throw approvalError('TF_APPROVAL_FORMAT');
+              const key = JSON.stringify([threadId, call.id]);
+              if (approvedRefs.has(key)) throw approvalError('TF_APPROVAL_LOOP');
+              if (this.approvalPrompts >= MAX_APPROVAL_CALLS_PER_RUN) {
+                throw approvalError('TF_APPROVAL_LIMIT');
+              }
+              approvedRefs.add(key);
+              const toolName = approvedToolName(call, events);
+              const index = ++this.approvalPrompts;
+              this.approvalTools[toolName] = (this.approvalTools[toolName] ?? 0) + 1;
+              this.onEvent({ type: 'secureforge.approval', content:
+                `Permission request ${index}/${MAX_APPROVAL_CALLS_PER_RUN}: ${toolName}` });
+              const allowed = await this.approveTool({ sessionId: session.id, toolCallId: call.id,
+                toolName, index, limit: MAX_APPROVAL_CALLS_PER_RUN });
               signal.throwIfAborted();
-              input.push({ type: 'user.tool_approval', threadId: approval.threadId ?? approval.thread_id,
-                toolCallId: call.id, approval: allowed ? { status: 'allow' } : { status: 'deny', reason: 'User declined staging' } });
+              input.push({ type: 'user.tool_approval', threadId, toolCallId: call.id,
+                approval: allowed ? { status: 'allow' } : { status: 'deny', reason: 'User declined tool staging' } });
             }
           }
+          if (!input.length) throw approvalError('TF_APPROVAL_FORMAT');
           continue;
         }
         if ((final.required_actions?.length || final.actionRequiredOnEvents?.length) && !approvals.length) {
@@ -183,6 +233,9 @@ export class LiveRun {
         TF_ITERATION_LIMIT: ['iteration_limit', 'iteration limit 30 reached; inspect tool counts and retrieved sources before retrying'],
         TF_TERMINAL_ERROR: ['terminal_error', 'model or runtime returned a terminal error; inspect the TrueForge session'],
         TF_INCOMPLETE: ['incomplete_turn', 'stream ended before a terminal event'],
+        TF_APPROVAL_LOOP: ['approval_loop', 'TrueForge repeated the same pending tool approval; stopping instead of repeatedly asking. Inspect activity, source hashes and the session before retrying'],
+        TF_APPROVAL_LIMIT: ['approval_limit', 'more than 8 tool approvals were requested in one Build run; stopping safely. Inspect activity and simplify the task or diagnose tool failures before retrying'],
+        TF_APPROVAL_FORMAT: ['approval_format', 'the runtime returned a malformed tool approval request; stopped without applying changes'],
       };
       const [code, reason] = Object.hasOwn(failures, error.code)
         ? failures[error.code]

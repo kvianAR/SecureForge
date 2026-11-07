@@ -99,7 +99,17 @@ export async function openReviewPayload(vscode, context, workspace, proposal, on
     }
     entries.push({ document, review, baseVersion: document.version });
   }
-  await vscode.window.showTextDocument(entries[0].document, vscode.ViewColumn.One);
+  // openTextDocument alone does not keep secondary files alive in VS Code.
+  // Materialize each reviewed document as a non-preview editor tab so VS Code
+  // does not silently close it while the human is considering the hunks.
+  for (const { document } of entries) {
+    await vscode.window.showTextDocument(document, {
+      viewColumn: vscode.ViewColumn.One, preview: false, preserveFocus: true,
+    });
+  }
+  await vscode.window.showTextDocument(entries[0].document, {
+    viewColumn: vscode.ViewColumn.One, preview: false, preserveFocus: true,
+  });
   return showReview(vscode, context, workspace, entries, group, onApplied);
 }
 
@@ -111,8 +121,26 @@ export async function recheckReviewEntries({ vscode, workspace, entries, signal 
   const validated = [];
   for (const entry of entries) {
     signal?.throwIfAborted();
-    const { document, review } = entry;
-    if (document.isClosed) throw new Error(`Cannot resume review: ${review.path} is closed. Prepare a new review.`);
+    const { review } = entry;
+    let document = entry.document;
+    if (document.isClosed) {
+      // Validate the source policy and original hash before asking VS Code
+      // to open a closed path. The normal post-open checks still run below.
+      const candidate = await workspace.rawForProposal(review.path);
+      signal?.throwIfAborted();
+      if (candidate.hash !== review.baseSha256) {
+        throw new Error(`Cannot resume review: ${review.path} changed since proposal creation. Generate a new proposal for the current contents.`);
+      }
+      // A closed VS Code document is not proof of a changed file. Recover it
+      // only after explicit Recheck, then verify the original bytes and
+      // hashes exactly as for a still-open document.
+      document = await vscode.workspace.openTextDocument(vscode.Uri.file(path.resolve(workspace.root, review.path)));
+      await vscode.window.showTextDocument(document, {
+        viewColumn: vscode.ViewColumn.One, preview: false, preserveFocus: true,
+      });
+      signal?.throwIfAborted();
+    }
+    if (document.isClosed) throw new Error(`Cannot resume review: ${review.path} could not be reopened. Prepare a new review.`);
     if (document.isDirty) {
       throw new Error(`Cannot resume review: ${review.path} has unsaved changes. Save or revert them before rechecking; regenerate the proposal if the content changed.`);
     }
@@ -125,19 +153,22 @@ export async function recheckReviewEntries({ vscode, workspace, entries, signal 
         sha256(document.getText()) !== review.baseSha256) {
       throw new Error(`Cannot resume review: ${review.path} changed since proposal creation. Generate a new proposal for the current contents.`);
     }
-    validated.push({ entry, version: document.version });
+    validated.push({ entry, document, version: document.version });
   }
-  // Recheck every open buffer after all asynchronous disk reads, before
-  // committing any new version baseline. applyReviewGroup checks again.
-  for (const { entry, version } of validated) {
-    const { document, review } = entry;
+  // Validate the complete multi-file group before changing even one entry.
+  // applyReviewGroup separately checks disk bytes and editor versions again.
+  for (const { entry, document, version } of validated) {
+    const { review } = entry;
     if (document.isClosed || document.isDirty || document.version !== version ||
         sha256(document.getText()) !== review.baseSha256) {
       throw new Error('A reviewed document changed while it was being rechecked. Retry after saving or reverting.');
     }
   }
   signal?.throwIfAborted();
-  for (const { entry, version } of validated) entry.baseVersion = version;
+  for (const { entry, document, version } of validated) {
+    entry.document = document;
+    entry.baseVersion = version;
+  }
   return validated.length;
 }
 
@@ -182,7 +213,7 @@ function showReview(vscode, context, workspace, entries, group, onApplied) {
       try {
         await recheckReviewEntries({ vscode, workspace, entries, signal: controller.signal });
         status = 'pending';
-        send({ type: 'status', status, message: 'Original source and clean buffers match the proposal. Review decisions are retained; apply only when ready.' });
+        send({ type: 'status', status, message: 'Source and clean editor buffers match the original proposal. Review decisions are retained; apply only when ready.' });
       } catch (error) {
         status = 'blocked';
         send({ type: 'status', status, message: error.message });

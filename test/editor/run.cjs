@@ -140,7 +140,7 @@ exports.run = async function run() {
     const { reviewSecurity, prepareOwnedFixtureFix } = await import('../../src/security.mjs');
     const { runApprovedCommand } = await import('../../src/commands.mjs');
     const { createPassport } = await import('../../src/passport.mjs');
-    const lab = await createOwnedLab(workspace.root);
+    const lab = await createOwnedLab();
     const labWorkspace = await new Workspace(lab.root).init();
     try {
       const report = await reviewSecurity(labWorkspace, { paths: [lab.targetPath, 'safe/storage.mjs'] });
@@ -167,7 +167,7 @@ exports.run = async function run() {
       assert.equal(passport.proofs[0].status, 'verified_on_owned_fixture');
       assert.ok(!JSON.stringify(passport).includes('originalContent'));
       await checkpoint('Owned security finding, editor-reviewed fix, saved regression proof and Patch Passport agree');
-    } finally { await labWorkspace.close(); }
+    } finally { await labWorkspace.close(); await fs.rm(lab.root, { recursive: true, force: true }); }
     if (process.env.SECUREFORGE_EDITOR_FAILURE_REPORT) {
       await require('./failure-check.cjs').verifyEditorFailure(vscode, api);
       await checkpoint('Task C uses the exact Task A prompt, shows a clear failure, remains responsive and preserves pinned Flask sources');

@@ -35,7 +35,12 @@ export async function verifyBuildWorkflow({ root, model }) {
         return disposable();
       },
       withProgress: async (_options, callback) => callback({}, { onCancellationRequested: disposable }),
-      showWarningMessage: async () => 'Allow request',
+      showWarningMessage: async (message, options, action) => {
+        assert.match(message, /^Allow TrueForge tool propose_(edit|batch|patch_batch)\? \(request \d+\/8\)$/);
+        assert.equal(options.modal, true);
+        assert.equal(action, 'Allow once');
+        return action;
+      },
       showErrorMessage: message => errors.push(message),
       showInformationMessage: message => errors.push(message),
       showTextDocument: async () => {},

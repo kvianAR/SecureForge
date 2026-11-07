@@ -1,4 +1,4 @@
-import { redactSecrets } from '../workspace.mjs';
+import { redactSecrets, hasProposedCredentialContent } from '../workspace.mjs';
 import { MAX_BATCH_FILES, MAX_BATCH_CONTENT_BYTES } from './batches.mjs';
 
 // Compact transport only: the existing batch store still creates full v1
@@ -47,7 +47,7 @@ export async function proposePatchBatch({ workspace, batches, edits, rationale =
     for (const change of changes.toReversed()) {
       proposedContent = proposedContent.slice(0, change.start) + change.text + proposedContent.slice(change.end);
     }
-    if (redactSecrets(proposedContent) !== proposedContent) throw new Error('Credential-bearing proposed content excluded');
+    if (hasProposedCredentialContent(proposedContent)) throw new Error('Credential-bearing proposed content excluded');
     totalBytes += Buffer.byteLength(proposedContent, 'utf8');
     if (totalBytes > MAX_BATCH_CONTENT_BYTES) throw new Error('Patch batch content exceeds 256 KiB');
     expanded.push({ path: source.relative, expectedSha256: source.hash, proposedContent });

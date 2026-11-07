@@ -78,7 +78,7 @@ export function registerSecurityCommands(vscode, context, state) {
   async function startLab() {
     const selected = await state.folder();
     if (!selected) return;
-    const lab = await createOwnedLab(selected.uri.fsPath);
+    const lab = await createOwnedLab();
     const workspace = await new Workspace(lab.root).init();
     let retained = false;
     try {

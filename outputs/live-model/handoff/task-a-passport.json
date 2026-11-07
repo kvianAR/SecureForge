@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "id": "0b6a99cb-d262-47d0-96ff-dfb20eb35058",
+  "createdAt": "2026-11-06T17:02:55.954Z",
+  "patches": [
+    {
+      "id": "01m6rvnfssw99tqyzhje3pvspv",
+      "sessionId": "01m6rvnfssw99tqyzhje3pvspv",
+      "recordedAt": "2026-11-06T16:49:57.005Z",
+      "status": "applied",
+      "actor": "local user review",
+      "files": [
+        {
+          "path": "src/flask/helpers.py",
+          "baseSha256": "ac96607bbfc9dbcf09d5442fe7e90d7f8a046b0df7d8f3fc3535b44112016d71",
+          "hunks": [
+            {
+              "id": "431c8e1b-0e5f-43ad-8622-aad24a77353e:h1",
+              "line": 31,
+              "decision": "accept"
+            },
+            {
+              "id": "431c8e1b-0e5f-43ad-8622-aad24a77353e:h2",
+              "line": 33,
+              "decision": "accept"
+            }
+          ]
+        }
+      ],
+      "appliedFiles": [
+        {
+          "path": "src/flask/helpers.py",
+          "beforeSha256": "ac96607bbfc9dbcf09d5442fe7e90d7f8a046b0df7d8f3fc3535b44112016d71",
+          "afterSha256": "16eeb6970f22e9e3e326450e9b4814534a724e065bb1826dd3bb028c746e8f85",
+          "documentVersion": 2,
+          "acceptedHunkIds": [
+            "431c8e1b-0e5f-43ad-8622-aad24a77353e:h1",
+            "431c8e1b-0e5f-43ad-8622-aad24a77353e:h2"
+          ]
+        }
+      ]
+    }
+  ],
+  "verification": [
+    {
+      "id": "1a1b0550-afba-4a6b-833d-f6df91079b4e",
+      "status": "passed",
+      "executed": true,
+      "command": {
+        "executable": "/Users/Apple/Projects/SecureForge/handoff/.tmp/handoff/flask-a/.venv/bin/python",
+        "args": [
+          "-m",
+          "pytest",
+          "tests/test_helpers.py",
+          "tests/test_secureforge_acceptance.py",
+          "-q"
+        ],
+        "cwd": "/Users/Apple/Projects/SecureForge/handoff/.tmp/handoff/flask-a",
+        "pythonSourcePath": "/Users/Apple/Projects/SecureForge/handoff/.tmp/handoff/flask-a/src",
+        "sources": [
+          {
+            "path": "tests/test_helpers.py",
+            "sha256": "2fabfd1624e41150f0913431c5e37b71e69b26021e31920086acd6e773f6594a"
+          },
+          {
+            "path": "tests/test_secureforge_acceptance.py",
+            "sha256": "96d2c0beb5f7d4dd4caf6051f8101b2bb128aff193db1aa9a35433495222398e"
+          }
+        ],
+        "targets": [],
+        "timeoutMs": 30000
+      },
+      "exitCode": 0,
+      "signal": null,
+      "durationMs": 906,
+      "output": ".......................................................                  [100%]\n55 passed in 0.10s\n",
+      "truncated": false
+    }
+  ],
+  "security": [],
+  "proofs": [],
+  "uncertainties": [
+    "A passed command records execution, not complete correctness or security coverage.",
+    "Editor-buffer application and disk Save are separate operations.",
+    "This is recorded event evidence; later external edits or native Undo may require a fresh review.",
+    "Security findings remain candidates unless a specific controlled proof supports them.",
+    "Secret redaction is best effort; review an exported report before sharing it."
+  ]
+}

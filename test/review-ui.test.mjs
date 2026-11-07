@@ -76,6 +76,30 @@ test('a stale file prevents the entire multi-file version refresh', async t => {
   assert.equal(b.baseVersion, 1);
 });
 
+test('closed-file recheck validates permitted unchanged disk bytes before opening an editor', async t => {
+  const f = await fixture(t);
+  for (const denied of [true, false]) {
+    let opened = 0;
+    const closed = { isClosed: true };
+    const entry = { document: closed, review: { path: 'sample.py', baseSha256: sha256(f.original) }, baseVersion: 1 };
+    const workspace = { root: f.root, async rawForProposal() {
+      if (denied) throw new Error('Restricted file path');
+      return { hash: sha256('external change\n') };
+    } };
+    const vscode = { Uri: { file: fsPath => ({ scheme: 'file', fsPath }) },
+      ViewColumn: { One: 1 }, window: { async showTextDocument() {} },
+      workspace: { isTrusted: true, async openTextDocument(uri) {
+        opened++;
+        return { uri, isClosed: false, isDirty: false, version: 2, getText: () => f.original };
+      } },
+    };
+    await assert.rejects(recheckReviewEntries({ vscode, workspace, entries: [entry] }));
+    assert.equal(opened, 0, 'A refused disk source must not reach VS Code file opening');
+    assert.equal(entry.document, closed);
+    assert.equal(entry.baseVersion, 1);
+  }
+});
+
 async function openMockPanel(t) {
   const f = await fixture(t);
   const store = new ProposalStore(f.workspace);
@@ -105,7 +129,7 @@ async function openMockPanel(t) {
   const vscode = {
     extensions: { getExtension: id => {
       assert.equal(id, 'secureforge.secureforge-review');
-      return { packageJSON: { version: '0.1.1' } };
+      return { packageJSON: { version: '0.1.4' } };
     } },
     ViewColumn: { One: 1, Beside: 2 }, Range, WorkspaceEdit,
     Uri: { file: fsPath => ({ scheme: 'file', fsPath }) },
@@ -175,12 +199,135 @@ test('recheck cannot recover or apply when the editor has unsaved modifications'
   assert.equal(await readFile(f.filename, 'utf8'), f.original);
 });
 
+test('closed reviewed file reopens only after explicit recheck and unchanged SHA validation', async t => {
+  const f = await fixture(t);
+  const oldDocument = { uri: { scheme: 'file', fsPath: f.filename },
+    isDirty: false, isClosed: true, version: 1, getText: () => f.original };
+  const reopened = { uri: { scheme: 'file', fsPath: f.filename },
+    isDirty: false, isClosed: false, version: 7, getText: () => f.original };
+  const entry = { document: oldDocument,
+    review: { path: 'sample.py', baseSha256: sha256(f.original) }, baseVersion: 1 };
+  let opened = 0;
+  let pinned = 0;
+  const vscode = {
+    Uri: { file: fsPath => ({ scheme: 'file', fsPath }) },
+    workspace: {
+      isTrusted: true,
+      openTextDocument: async uri => {
+        assert.equal(uri.fsPath, f.filename);
+        opened++;
+        return reopened;
+      },
+    },
+    ViewColumn: { One: 1 },
+    window: { showTextDocument: async (document, options) => {
+      assert.ok(document === reopened || document.uri.fsPath === f.filename);
+      assert.equal(options.preview, false);
+      pinned++;
+    } },
+  };
+  assert.equal(await recheckReviewEntries({
+    vscode, workspace: f.workspace, entries: [entry],
+  }), 1);
+  assert.equal(opened, 1);
+  assert.equal(pinned, 1);
+  assert.equal(entry.document, reopened);
+  assert.equal(entry.baseVersion, 7);
+  assert.equal(await readFile(f.filename, 'utf8'), f.original, 'Never write a file while recovering review');
+
+  // A subsequent closed document whose disk contents changed must not be
+  // silently rebased to an edited source.
+  reopened.isClosed = true;
+  const changed = { ...reopened, isClosed: false, version: 9, getText: () => 'different\\n' };
+  vscode.workspace.openTextDocument = async () => changed;
+  await assert.rejects(recheckReviewEntries({
+    vscode, workspace: f.workspace, entries: [entry],
+  }), /changed since proposal/);
+  assert.equal(entry.document, reopened, 'Failed recheck cannot replace the original entry');
+  assert.equal(entry.baseVersion, 7);
+});
+
+test('multi-file review keeps all original documents in non-preview tabs', async t => {
+  const f = await fixture(t);
+  const secondPath = path.join(f.root, 'other.py');
+  const secondBefore = 'def state():\\n    return "closed"\\n';
+  await writeFile(secondPath, secondBefore);
+  const store = new ProposalStore(f.workspace);
+  const first = await store.proposeEdit({
+    path: 'sample.py', expectedSha256: sha256(f.original), proposedContent: f.proposed,
+  });
+  const second = await store.proposeEdit({
+    path: 'other.py', expectedSha256: sha256(secondBefore),
+    proposedContent: secondBefore.replace('closed', 'reviewed'),
+  });
+  const documents = new Map([
+    [f.filename, { uri: { scheme: 'file', fsPath: f.filename }, isDirty: false,
+      isClosed: false, version: 1, getText: () => f.original }],
+    [secondPath, { uri: { scheme: 'file', fsPath: secondPath }, isDirty: false,
+      isClosed: false, version: 1, getText: () => secondBefore }],
+  ]);
+  const displayed = [];
+  const panel = { webview: { onDidReceiveMessage: () => ({ dispose() {} }),
+    postMessage() {} }, onDidDispose() {}, };
+  const vscode = {
+    Uri: { file: fsPath => ({ scheme: 'file', fsPath }) },
+    ViewColumn: { One: 1, Beside: 2 },
+    workspace: {
+      isTrusted: true,
+      openTextDocument: async uri => documents.get(uri.fsPath),
+      onDidChangeTextDocument: () => ({ dispose() {} }),
+    },
+    window: {
+      showTextDocument: async (doc, opts) => {
+        displayed.push({ path: doc.uri.fsPath, preview: opts.preview, preserveFocus: opts.preserveFocus });
+      },
+      createWebviewPanel: () => panel,
+    },
+  };
+  await openReviewPayload(vscode, { subscriptions: [] }, f.workspace, {
+    id: 'two-file-safe-review',
+    proposals: [store.getProposal(first.id), store.getProposal(second.id)],
+  });
+  assert.deepEqual(displayed.map(d => d.path), [f.filename, secondPath, f.filename]);
+  assert.ok(displayed.every(d => d.preview === false && d.preserveFocus === true));
+  assert.equal(await readFile(f.filename, 'utf8'), f.original);
+  assert.equal(await readFile(secondPath, 'utf8'), secondBefore);
+});
+
+test('recheck is atomic when one closed reviewed file reopens dirty', async t => {
+  const f = await fixture(t);
+  const other = path.join(f.root, 'other.py');
+  await writeFile(other, 'untouched\\n');
+  const a = { document: { uri: { scheme: 'file', fsPath: f.filename },
+    version: 3, isDirty: false, isClosed: true, getText: () => f.original },
+    baseVersion: 1, review: { path: 'sample.py', baseSha256: sha256(f.original) } };
+  const b = { document: { uri: { scheme: 'file', fsPath: other },
+    version: 3, isDirty: false, isClosed: true, getText: () => 'untouched\\n' },
+    baseVersion: 1, review: { path: 'other.py', baseSha256: sha256('untouched\\n') } };
+  const firstOpened = { ...a.document, isClosed: false, version: 4 };
+  const secondOpened = { ...b.document, isClosed: false, isDirty: true, version: 4 };
+  const vscode = {
+    Uri: { file: fsPath => ({ scheme: 'file', fsPath }) },
+    ViewColumn: { One: 1 },
+    workspace: { isTrusted: true, openTextDocument: async uri =>
+      uri.fsPath === f.filename ? firstOpened : secondOpened },
+    window: { showTextDocument: async () => {} },
+  };
+  await assert.rejects(recheckReviewEntries({
+    vscode, workspace: f.workspace, entries: [a, b],
+  }), /unsaved changes/);
+  assert.equal(a.document.isClosed, true);
+  assert.equal(b.document.isClosed, true);
+  assert.equal(a.baseVersion, 1);
+  assert.equal(b.baseVersion, 1);
+});
+
 test('review webview exposes separate Accept all, Apply, and stale Recheck controls', async t => {
   const f = await openMockPanel(t);
   const script = f.panel.webview.html.match(/<script nonce="[^"]+">([\s\S]*?)<\/script>/)?.[1];
   assert.ok(script);
   assert.match(f.panel.webview.html, /id="acceptAll"/);
-  assert.match(f.panel.webview.html, /id="extensionVersion">SecureForge extension 0\.1\.1/);
+  assert.match(f.panel.webview.html, /id="extensionVersion">SecureForge extension 0\.1\.4/);
   assert.match(f.panel.webview.html, /id="recheck"/);
   const nodes = new Map();
   const all = [];

@@ -4,7 +4,7 @@
 
 SecureForge is a security-first VS Code coding assistant powered by local **TrueForge**. The extension supports live proposal delivery, per-hunk review for existing-file batches, guarded apply/Undo, separately approved verification commands, cancellation, read-only security candidates, a controlled repair lab and exported Patch Passports. Build, Defend and Prove share the existing v1 proposal and batch contracts.
 
-Local verification includes real VS Code editor tests and actual TrueForge runtime/SDK/MCP sessions using a deterministic local inference fixture. Configure your own model in TrueForge for production-model verification. Official competition Tasks A/B/C remain release acceptance work.
+Qualification includes 153 automated regressions, actual VS Code editor/runtime checks and real Muse runs through the installed extension. The handoff Task A passed 55 approved tests. Task B autonomously changed four files and passed 67 approved tests, 102 independent checks and a strict documentation build. Task C and the owned security lab have separate installed UI evidence. The official recording, PDF finalization and portal submission remain pending. The [fresh source audit](docs/SECURITY_AUDIT_2026-11-07.md) records fixed issues and scope. See [current readiness](docs/ROUND1_READINESS.md) and [handoff evidence](outputs/live-model/handoff).
 
 ## Contributors and responsibility
 
@@ -26,8 +26,8 @@ SecureForge's VSIX is a **local beta**, not a generally certified production cod
    npm run package:extension
    ```
 
-3. In VS Code open **Extensions → … → Install from VSIX…** and choose `outputs/SecureForge-0.1.1.vsix`, then reload the window.
-   The **SecureForge Review** panel displays the loaded extension version. If it doesn't show **0.1.1** after installation, fully quit VS Code and reinstall the VSIX; an earlier extension host can still be active.
+3. In VS Code open **Extensions → … → Install from VSIX…** and choose `outputs/SecureForge-0.1.4.vsix`, then reload the window.
+   The **SecureForge Review** panel displays the loaded extension version. If it doesn't show **0.1.4** after installation, fully quit VS Code and reinstall the VSIX; an earlier extension host can still be active.
 4. Open the **target repository folder you actually want to change** (e.g., Flask for a Flask request). The name beside the chat send button identifies the active target; opening a different terminal folder does not switch the VS Code workspace.
 5. In the Secondary Side Bar, select **SecureForge**. Type an instruction in the bottom composer; press **Enter** to send or **Shift+Enter** for a line break. The paperclip attaches file context, the stack icon adds symbol context, and Stop cancels an active run. If just one local model is discoverable, the extension selects it; otherwise pick or enter the configured model.
 6. If the task obviously belongs to a different project (such as changing Flask environment variables inside a Node-only workspace), SecureForge stops **before contacting the model**. Click **Recent projects** to open VS Code's existing project history, or **Browse folders** to choose a folder yourself.
@@ -35,6 +35,20 @@ SecureForge's VSIX is a **local beta**, not a generally certified production cod
 8. After applying accepted hunks, **save the files yourself** and choose **Run tests (save files first)** in the chat. Select Node or Python, choose up to 20 eligible test files, and approve the exact command in the confirmation dialog. A passing test receipt is reported in the sidebar; full details remain in **Output → SecureForge Activity**. Nothing runs automatically.
 
 **Never merge or approve generated patches solely because the chat says they are complete.** Review the diff, run relevant tests, and check `git diff --check`.
+
+### Credential screening for generated masking tests
+
+SecureForge's source read/search redactor remains conservative and unchanged. When it evaluates **newly proposed** code, it permits only a small fixed set of deliberately harmless test sentinel values (for example `{"password": "***"}` or `{"api_key": 0}`) instead of treating them as real credentials. Literal password strings, unknown numeric values, and recognized API-token patterns still block proposal staging. This is a narrowly scoped heuristic, not guaranteed secret detection; never put real credentials in prompts, source examples, or test data.
+
+### Reviewing multiple files safely
+
+Every file in a coordinated proposal is opened as a non-preview tab to keep VS Code from silently closing it during review. If an original file was closed, the review blocks Apply until **Recheck unchanged files** safely reopens it and verifies that both disk and editor bytes still match the original proposal SHA-256. Recheck never applies or saves edits, and any dirty, replaced, changed or mismatched file blocks the entire patch. Reopen/recheck is a recovery step, not approval to accept unsafe code.
+
+### Repeated TrueForge approval prompts
+
+A Build run may request human approval to stage an in-memory patch, and a test command has its own explicit execution approval. Only approve a tool request whose name and purpose you recognize. The dialog shows the tool name and how many approvals have been requested in this run; it does not authorize editing, saving, or executing tests by itself.
+
+If the model repeatedly requests permission without producing a review, **Stop or cancel the run**. Open **Activity and retrieved files** in the SecureForge sidebar or **Output → SecureForge Activity**, check the most recent tool names and failed statuses, and verify `git status --short` in the target repository. The client refuses a repeated pending approval and stops after eight distinct approval prompts instead of silently continuing. If the same call keeps failing, capture the session ID and sanitized activity log before retrying on a clean checkout. Never approve indefinitely or treat a cancelled/failed run as a successful patch.
 
 ### Development and verification
 

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, writeFile, rm } from 'node:fs/promises';
+import { readFile, writeFile, rm, stat } from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
 import { Workspace, sha256 } from '../src/workspace.mjs';
@@ -11,12 +11,25 @@ import { createReview, composeAcceptedHunks } from '../src/review.mjs';
 import { createPassport } from '../src/passport.mjs';
 
 async function labFixture(t) {
-  const parent = await mkdtemp(path.join(os.tmpdir(), 'sf-proof-'));
-  const lab = await createOwnedLab(parent);
+  const lab = await createOwnedLab();
   const workspace = await new Workspace(lab.root).init();
-  t.after(async () => { await workspace.close(); await rm(parent, { recursive: true, force: true }); });
+  t.after(async () => { await workspace.close(); await rm(lab.root, { recursive: true, force: true }); });
   return { workspace, lab };
 }
+
+test('owned labs use fresh private OS temporary directories', async t => {
+  const first = await createOwnedLab();
+  t.after(() => rm(first.root, { recursive: true, force: true }));
+  const second = await createOwnedLab();
+  t.after(() => rm(second.root, { recursive: true, force: true }));
+  assert.notEqual(first.root, second.root);
+  for (const lab of [first, second]) {
+    assert.equal(path.dirname(lab.root), os.tmpdir());
+    assert.equal((await stat(lab.root)).mode & 0o777, 0o700);
+    assert.equal(await readFile(path.join(lab.root, lab.targetPath), 'utf8'),
+      await readFile(new URL('../fixtures/security-lab/vulnerable/storage.mjs', import.meta.url), 'utf8'));
+  }
+});
 
 test('security review preserves sources, distinguishes the owned flaw and safe control, and reports limitations', async t => {
   const { workspace, lab } = await labFixture(t);

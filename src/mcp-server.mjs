@@ -176,7 +176,12 @@ export async function createMcpServer({ root, port = 8792, host = '127.0.0.1', a
       return send(400, { jsonrpc: '2.0', id: null, error: { code: -32700, message: 'Invalid JSON-RPC payload' } });
     }
   });
-  await new Promise((resolve, reject) => { server.once('error', reject); server.listen(port, host, resolve); });
+  try {
+    await new Promise((resolve, reject) => { server.once('error', reject); server.listen(port, host, resolve); });
+  } catch (error) {
+    await workspace.close();
+    throw error;
+  }
   return { server, workspace, proposals, batches, address: server.address() };
 }
 

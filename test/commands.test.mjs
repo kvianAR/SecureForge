@@ -45,6 +45,25 @@ test('shells, option injection, traversal, unknown commands and changed tests ar
   } }), /changed after approval/);
 });
 
+test('verification rejects backslash selectors before approving a differently hashed file', async t => {
+  const { workspace } = await fixture(t);
+  await mkdir(path.join(workspace.root, 'dir', 'nested'), { recursive: true });
+  await writeFile(path.join(workspace.root, 'dir', 'sample.test.mjs'), 'export {};');
+  await writeFile(path.join(workspace.root, 'dir\\sample.test.mjs'), 'throw new Error("wrong file");');
+  await writeFile(path.join(workspace.root, 'dir', 'nested', 'test_binding.py'), 'pass\n');
+  let approvals = 0;
+  for (const request of [
+    { executable: 'node', args: ['--test', 'dir\\sample.test.mjs'] },
+    { executable: 'python3', args: ['-m', 'pytest', 'dir\\nested/test_binding.py'] },
+  ]) {
+    await assert.rejects(runApprovedCommand({ workspace, request, approve: async () => {
+      approvals++;
+      return true;
+    } }), /Only reviewed/);
+  }
+  assert.equal(approvals, 0);
+});
+
 test('verification bounds output, redacts credentials and omits provider environment', async t => {
   const options = await fixture(t, `
 console.log('password=example-private-value');
