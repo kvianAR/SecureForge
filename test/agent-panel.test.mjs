@@ -33,15 +33,23 @@ test('agent panel emits valid script, bounds tasks and surfaces run failures', a
   };
   let runs = 0;
   let cancels = 0;
+  const reviewActions = [];
   registerAgentPanel(vscode, { subscriptions: [] }, {
     subscribe: () => ({ dispose() {} }),
     run: async () => { runs++; throw new Error('Model unavailable'); },
     cancel: async () => { cancels++; },
+    reviewAction: async (kind, id) => { reviewActions.push({ kind, id }); },
+    currentReviewState: () => ({ type: 'inlineReviewState', status: 'pending', decided: 0,
+      accepted: 0, hunks: [{ id: 'late:h1', path: 'sample.py', line: 2 }] }),
   });
   await open();
   assert.deepEqual(commands, ['secureforge.agentSidebar.focus']);
   assert.equal(options.webviewOptions.retainContextWhenHidden, true);
   provider.resolveWebviewView(panel);
+  await receive({ type: 'ready' });
+  assert.equal(messages.at(-1).type, 'inlineReviewState',
+    'A late-created sidebar must receive the currently staged demo review');
+  assert.equal(messages.at(-1).hunks[0].id, 'late:h1');
   assert.equal(panel.webview.options.enableScripts, true);
   assert.match(panel.webview.html, /\/tmp\/flask/);
   const script = panel.webview.html.match(/<script nonce="[^"]+">([\s\S]*?)<\/script>/)[1];
@@ -61,6 +69,14 @@ test('agent panel emits valid script, bounds tasks and surfaces run failures', a
   await receive({ type: 'run', task: 'Update docstring' });
   assert.equal(runs, 1);
   assert.match(messages.at(-1).message, /Model unavailable/);
+  await receive({ type: 'reviewAction', action: 'accept', id: 'sample:h1' });
+  assert.deepEqual(reviewActions, [{ kind: 'accept', id: 'sample:h1' }]);
+  await receive({ type: 'reviewAction', action: 'acceptAll' });
+  await receive({ type: 'reviewAction', action: 'rejectAll' });
+  assert.deepEqual(reviewActions.slice(-2), [{ kind: 'acceptAll', id: undefined },
+    { kind: 'rejectAll', id: undefined }]);
+  await receive({ type: 'reviewAction', action: 'not-allowed', id: 'sample:h1' });
+  assert.equal(reviewActions.length, 3, 'Unknown review actions must be ignored');
   await receive({ type: 'cancel' });
   assert.equal(cancels, 1);
   await receive({ type: 'verify' });
@@ -112,6 +128,8 @@ test('sidebar defaults to the right, and minimal composer dispatches tasks safel
       querySelector: selector => selector === '.folder span' ? element('workspace-label') : null },
     window: { addEventListener: (kind, fn) => { listeners[kind] = fn; } },
   });
+  assert.equal(posted.at(-1).type, 'ready', 'Sidebar requests current review state on load');
+  posted.length = 0;
   element('task').value = 'Fix the parser';
   element('run').onclick();
   assert.equal(posted.length, 1);
@@ -123,6 +141,33 @@ test('sidebar defaults to the right, and minimal composer dispatches tasks safel
   assert.equal(element('run').disabled, true);
   assert.equal(element('cancel').hidden, false);
   listeners.message({ data: { type: 'reviewReady', fileCount: 2 } });
+  listeners.message({ data: { type: 'inlineReviewState', status: 'pending',
+    message: 'Review in the editor', decided: 0, hunks: [
+      { id: 'p:h1', path: 'src/sample.py', line: 12, preview: 'new code', decision: null },
+    ] } });
+  const card = element('reviewMount').children.at(-1);
+  assert.equal(element('reviewMount').hidden, false,
+    'The review must stay visible above the composer rather than below the welcome panel');
+  assert.match(card.children[0].textContent, /Review edits/);
+  const hunk = card.children[2];
+  assert.equal(hunk.children[0].textContent, 'src/sample.py:12');
+  hunk.children[2].children[0].onclick();
+  assert.deepEqual(JSON.parse(JSON.stringify(posted.at(-1))), { type: 'reviewAction', action: 'accept', id: 'p:h1' });
+  const controls = card.children.at(-1).children;
+  assert.equal(controls[0].textContent, '✓ Accept all');
+  controls[0].onclick();
+  assert.equal(posted.at(-1).action, 'acceptAll');
+  assert.equal(controls[1].textContent, '✕ Reject all');
+  controls[1].onclick();
+  assert.equal(posted.at(-1).action, 'rejectAll');
+  listeners.message({ data: { type: 'inlineReviewState', status: 'applied',
+    message: 'Applied 1 approved hunk', decided: 1, accepted: 1,
+    hunks: [{ id: 'p:h1', path: 'src/sample.py', line: 12, decision: 'accept', preview: 'new code' }] } });
+  const applied = element('reviewMount').children.at(-1);
+  const undo = applied.children.at(-1).children[0];
+  assert.match(undo.textContent, /Undo approved edit/);
+  undo.onclick();
+  assert.equal(posted.at(-1).action, 'undo', 'Undo must remain available in the sidebar after Apply');
   listeners.message({ data: { type: 'status', message: 'Done', running: false } });
   assert.equal(element('run').disabled, false);
   assert.match(element('status').textContent, /Review changes/);

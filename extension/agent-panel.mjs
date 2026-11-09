@@ -13,9 +13,23 @@ export function registerAgentPanel(vscode, context, actions) {
     panel.onDidDispose(() => { disposed = true; subscription.dispose(); if (running) void actions.cancel(); });
     panel.webview.onDidReceiveMessage(async message => {
       if (disposed || !message || typeof message !== 'object') return;
+      if (message.type === 'ready') {
+        // A demo may stage edits before the secondary sidebar webview loads.
+        const snapshot = actions.currentReviewState?.();
+        if (snapshot) panel.webview.postMessage(snapshot);
+        return;
+      }
       if (message.type === 'cancel') { await actions.cancel(); return; }
       if (message.type === 'verify') {
         if (!running) await vscode.commands.executeCommand('secureforge.runVerification');
+        return;
+      }
+      if (message.type === 'reviewAction') {
+        if (!['accept', 'reject', 'acceptAll', 'rejectAll', 'apply', 'undo', 'discard', 'recheck', 'focus'].includes(message.action)) return;
+        try { await actions.reviewAction?.(message.action, message.id); }
+        catch (error) {
+          if (!disposed) panel.webview.postMessage({ type: 'reviewError', message: String(error.message || 'Review action failed').slice(0, 300) });
+        }
         return;
       }
       if (message.type === 'openFlaskRoot') {
@@ -105,6 +119,8 @@ header svg{width:21px;height:21px}
 .message.agent{margin-right:14px;background:var(--vscode-editor-background)}
 .message .sender{font-size:11px;font-weight:600;margin-bottom:4px;color:var(--vscode-descriptionForeground)}
 #dock{flex-shrink:0;padding:0 11px 13px;background:var(--vscode-sideBar-background)}
+#reviewMount{max-height:42vh;min-height:0;overflow:auto;margin:0 0 10px;border-bottom:1px solid var(--vscode-panel-border);padding:2px 0 10px;scrollbar-width:thin}
+#reviewMount[hidden]{display:none!important}
 #status{font-size:11px;color:var(--vscode-descriptionForeground);min-height:16px;margin:0 3px 7px;overflow-wrap:anywhere}
 .composer{border:1px solid var(--vscode-input-border,var(--vscode-panel-border));border-radius:12px;background:var(--vscode-input-background);padding:9px 10px 8px}
 textarea{display:block;border:0!important;outline:none!important;resize:vertical;min-height:43px;max-height:150px;width:100%;background:transparent;color:var(--vscode-input-foreground);font:13px/1.5 var(--vscode-font-family);padding:2px 0}
@@ -123,6 +139,21 @@ textarea::placeholder{color:var(--vscode-input-placeholderForeground)}
 #technical{margin:9px 0 0;padding:10px 4px 0;border-top:1px solid var(--vscode-panel-border);max-height:180px;overflow:auto}
 #technical summary{cursor:pointer;font-size:11px;color:var(--vscode-descriptionForeground)}
 .change-folder{margin-top:10px;padding:7px 10px;border-radius:7px;background:var(--vscode-button-secondaryBackground);color:var(--vscode-button-secondaryForeground);font-weight:600}
+.inline-review{border:1px solid var(--vscode-panel-border);border-radius:10px;margin:0;padding:10px;background:var(--vscode-editor-background);font-size:12px}
+.inline-review .title{font-weight:650;margin-bottom:4px}
+.inline-review .hint{color:var(--vscode-descriptionForeground);font-size:11px;margin-bottom:7px}
+.inline-review .hunk{padding:7px 0;border-top:1px solid var(--vscode-panel-border)}
+.inline-review .file{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:var(--vscode-editor-font-family);font-size:11px;color:var(--vscode-descriptionForeground)}
+.inline-review .preview{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:3px 0;color:var(--vscode-editorGhostText-foreground,var(--vscode-descriptionForeground))}
+.inline-review .actions{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin-top:3px}
+.inline-review .small{font-size:13px;font-weight:750;line-height:1.35;min-height:28px;padding:4px 9px;border:1px solid var(--vscode-panel-border);border-radius:7px}
+.inline-review .small.accept{color:var(--vscode-testing-iconPassed,#36b878);border-color:currentColor}
+.inline-review .small.reject{color:var(--vscode-testing-iconFailed,#f06565);border-color:currentColor}
+.inline-review .small.accept.selected{background:var(--vscode-testing-iconPassed,#267a51);color:var(--vscode-editor-background)}
+.inline-review .small.reject.selected{background:var(--vscode-testing-iconFailed,#a83d43);color:var(--vscode-editor-background)}
+.inline-review .small:hover:not(:disabled){background:var(--vscode-toolbar-hoverBackground)}
+.inline-review .small.selected{border-color:var(--vscode-focusBorder);color:var(--vscode-textLink-foreground)}
+.inline-review .small.primary{background:var(--vscode-button-background);color:var(--vscode-button-foreground);border-color:transparent}
 #technical pre{max-height:125px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;font-size:11px}
 [hidden]{display:none!important}
 @media(max-width:300px){header{padding-left:10px}#thread{padding:12px}#dock{padding:0 7px 9px}.folder{max-width:30%}}
@@ -140,6 +171,7 @@ textarea::placeholder{color:var(--vscode-input-placeholderForeground)}
 </section>
 </main>
 <footer id="dock">
+<section id="reviewMount" aria-label="SecureForge review decisions" hidden></section>
 <div id="status" role="status" aria-live="polite">Ready · All edits require approval</div>
 <div class="composer"><textarea id="task" rows="2" maxlength="20000" aria-label="Ask SecureForge" placeholder="Ask SecureForge…"></textarea>
 <div class="toolbar">
@@ -154,9 +186,64 @@ textarea::placeholder{color:var(--vscode-input-placeholderForeground)}
 </footer>
 <script nonce="${nonce}">
 const vscode=acquireVsCodeApi();
-const task=document.getElementById('task'),thread=document.getElementById('thread'),welcome=document.getElementById('welcome'),run=document.getElementById('run'),cancel=document.getElementById('cancel'),status=document.getElementById('status');
-let busy=false,review=false,hasReply=false;
+const task=document.getElementById('task'),thread=document.getElementById('thread'),welcome=document.getElementById('welcome'),run=document.getElementById('run'),cancel=document.getElementById('cancel'),status=document.getElementById('status'),reviewMount=document.getElementById('reviewMount');
+let busy=false,review=false,hasReply=false,reviewCard;
 function message(role,value){if(welcome.isConnected)welcome.remove();const box=document.createElement('div');box.className='message '+role;const head=document.createElement('div');head.className='sender';head.textContent=role==='user'?'You':'SecureForge';const body=document.createElement('div');body.textContent=String(value||'').slice(0,4000);box.append(head,body);thread.append(box);thread.scrollTop=thread.scrollHeight;return box;}
+function drawReview(data){
+ if(reviewCard)reviewCard.remove();
+ reviewCard=undefined;
+ reviewMount.replaceChildren();
+ if(!Array.isArray(data.hunks)||!data.hunks.length){
+  reviewMount.hidden=true;
+  if(data.status==='discarded')status.textContent='Review discarded · No files changed';
+  return;
+ }
+ // Keep review decisions visible beside the composer, including for demos
+ // opened before the sidebar webview loaded.
+ if(welcome.isConnected)welcome.remove();
+ review=true;
+ reviewMount.hidden=false;
+ status.textContent=(data.message||'Review suggested changes in the source editor.').slice(0,180);
+ const card=document.createElement('section');card.className='inline-review';
+ const heading=document.createElement('div');heading.className='title';heading.textContent='Review edits · '+data.hunks.length+' hunk(s)';
+ const hint=document.createElement('div');hint.className='hint';
+ hint.textContent=(data.message||'Select Accept or Reject for each change.').slice(0,300);
+ card.append(heading,hint);
+ const post=(action,id)=>vscode.postMessage({type:'reviewAction',action,id});
+ function small(label,action,id,selected=false,primary=false){
+  const button=document.createElement('button');button.className='small'+(selected?' selected':'')+(primary?' primary':'')+
+    (action==='accept'||action==='reject'?' '+action:'');
+  button.textContent=label;button.onclick=()=>post(action,id);return button;
+ }
+ for(const item of data.hunks.slice(0,200)){
+  const hunk=document.createElement('div');hunk.className='hunk';
+  const file=document.createElement('button');file.className='file';file.textContent=item.path+':'+item.line;file.title='Open location in editor';file.onclick=()=>post('focus',item.id);
+  const snippet=document.createElement('span');snippet.className='preview';snippet.textContent=item.preview||'Change';
+  const actions=document.createElement('div');actions.className='actions';
+  if(data.status==='pending'){
+   actions.append(small('✓ Accept','accept',item.id,item.decision==='accept'),
+     small('✕ Reject','reject',item.id,item.decision==='reject'));
+  }else{
+   const state=document.createElement('span');state.className='hint';
+   state.textContent=item.decision==='accept'?'Accepted':item.decision==='reject'?'Rejected':data.status;
+   actions.append(state);
+  }
+  hunk.append(file,snippet,actions);card.append(hunk);
+ }
+ const foot=document.createElement('div');foot.className='actions';
+ if(data.status==='pending'){
+  foot.append(small('✓ Accept all','acceptAll'),small('✕ Reject all','rejectAll'));
+  const complete=data.decided===data.hunks.length;
+  const apply=small(data.accepted===0&&complete?'Finish rejection':'Apply accepted','apply',undefined,false,true);
+  apply.disabled=!complete;
+  foot.append(apply,small('Discard','discard'));
+ }else if(data.status==='applied'){
+  foot.append(small('↶ Undo approved edit','undo',undefined,false,true));
+ }else if(data.status==='stale'||data.status==='blocked'){
+  foot.append(small('Recheck unchanged','recheck'));
+ }
+ card.append(foot);reviewMount.append(card);reviewCard=card;
+}
 function submit(){const text=task.value.trim();if(!text||busy)return;review=false;hasReply=false;message('user',text);task.value='';status.textContent='Reading your project…';vscode.postMessage({type:'run',task:text});}
 run.onclick=submit;
 task.onkeydown=event=>{if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();submit();}};
@@ -170,7 +257,9 @@ window.addEventListener('message',event=>{const data=event.data;if(!data||typeof
    if(busy){status.textContent='Working on your code…';}
    else{if(review)status.textContent='Review changes in the editor';else if(!hasReply){status.textContent=data.message;message('agent',data.message);hasReply=true;}}
  }
- if(data.type==='reviewReady'){review=true;hasReply=true;const count=Number.isInteger(data.fileCount)?data.fileCount:0;const note=typeof data.message==='string'&&data.message.trim()?data.message.trim().slice(0,3000):'Review the proposed edits in the editor before applying them.';message('agent','Proposed changes in '+count+' file(s). Nothing has been applied.\\n\\n'+note);status.textContent='Review changes in the editor';}
+ if(data.type==='inlineReviewState'){drawReview(data);}
+  if(data.type==='reviewError'){message('agent',String(data.message||'Review action failed').slice(0,300));}
+  if(data.type==='reviewReady'){review=true;hasReply=true;const count=Number.isInteger(data.fileCount)?data.fileCount:0;const note=typeof data.message==='string'&&data.message.trim()?data.message.trim().slice(0,3000):'Review the proposed edits in the editor before applying them.';message('agent','Proposed changes in '+count+' file(s). Nothing has been applied.\\n\\n'+note);status.textContent='Review changes in the editor';}
  if(data.type==='workspaceMismatch'){
    hasReply=true;
    const box=message('agent',String(data.message||'This task belongs to another project.').slice(0,1200));
@@ -232,6 +321,7 @@ window.addEventListener('message',event=>{const data=event.data;if(!data||typeof
  if(data.type==='context')document.getElementById('context').textContent=data.summary;
  if(data.type==='activity'){const line=String(data.text||'');const log=document.getElementById('activity');log.textContent=(log.textContent+line+'\\n').slice(-32000);if(busy&&/discover_repository: started/.test(line))status.textContent='Finding relevant files…';if(busy&&/propose_(patch_batch|batch|edit): started/.test(line))status.textContent='Preparing changes…';}
 });
+vscode.postMessage({type:'ready'});
 </script></body></html>`;
   }
   context.subscriptions.push(vscode.window.registerWebviewViewProvider(

@@ -1,6 +1,74 @@
 # Hunk review milestone
 
+## Inline editor review (default for Live Build)
+
+The SecureForge sidebar accepts natural-language prompts. For a selection-specific
+request, select code and run **SecureForge: Inline Edit Selection** (Cmd+Option+I on macOS).
+Live Build and Inline Edit now open the **existing source file** in the normal VS Code
+editor rather than a second review webview. Suggested hunks are highlighted,
+with one compact clickable hint displaying **✅ Accept | ❌ Reject** at the end of
+each affected line. The inlay-hint parts expose commands, but VS Code
+can open a hover instead of executing them on an ordinary click.
+Use **Cmd-click** on macOS (**Ctrl-click** on Windows/Linux) on the line-end
+**✅ Accept | ❌ Reject** controls, or use the larger ordinary-click buttons
+in the SecureForge chat sidebar. Hovering over either inlay hint also offers
+clickable **✅ Accept | ❌ Reject** links alongside the full old/new code
+preview. Each hover is rendered once rather than duplicated. The redundant
+per-hunk CodeLens actions above every line are intentionally removed; that
+space is reserved for Accept all, Reject all, Apply, Discard and Undo.
+Nothing is applied until the user selects Apply.
+
+The short line-end label is intentionally not preceded by a long code preview,
+because VS Code truncates overly long inlay-hint groups. Once selected, a
+decision changes to **✅ Accepted** or **❌ Rejected**.
+
+Apply / Discard / Recheck / guarded Undo remain CodeLens actions above the first
+change. Inlay hints inherit the user's VS Code theme and settings; the public
+API cannot pin controls to the viewport's extreme right or assign separate
+font size / bold styling to one extension's hints. For larger controls, set
+`editor.inlayHints.fontSize` to `15` (affects all hints). Choosing Accept
+or Reject does not edit the document; click **Apply accepted** in the editor
+or in SecureForge chat after deciding every hunk.
+
+The chat sidebar also shows each hunk's location, a short preview, and matching
+Accept / Reject / Apply / Undo controls. Clicking a file location focuses the
+source editor. **Review Proposal JSON** and **Open Two-Hunk Review Demo** also open editor-native
+reviews through the same controller. The previous standalone review-webview
+implementation remains available as an internal compatibility API and is no
+longer the default UI.
+
+Both surfaces share the same in-memory review decisions and the established
+hash-validated, multi-file WorkspaceEdit transaction. The extension refuses
+stale or dirty source buffers, does not modify disk until Save, and records
+approval receipts for the Patch Passport. **Undo approved edit** is available
+only while the editor and disk remain consistent with the applied receipt.
+When external edits or Save/Restore interfere, use native Undo or inspect Git
+rather than forcing a stale restore. The editor-native review never launches
+the classic review tab automatically.
+
 This local editor milestone consumes the existing pending v1 `get_proposal` payload, including `originalContent` and `proposedContent`. It derives line-level hunks without modifying the shared agent or MCP contracts.
+
+## Review-all controls and Undo visibility
+
+**Accept all** and **Reject all** are available above the first proposed hunk
+and in the SecureForge sidebar. They set the decisions for every hunk in the
+current batch but do not edit any buffer; the developer must still explicitly
+select **Apply accepted**. If all hunks are rejected, the final action reads
+**Finish rejection** and applies no edits.
+
+The sidebar pins a compact review card above the prompt composer, rather than
+leaving the Welcome illustration visible while its review is outside the scroll
+area. A `ready` handshake retrieves the last review snapshot even when an
+agent run or built-in demo staged the proposal before VS Code created the
+sidebar view.
+
+After Apply, the green preview highlighting and per-hunk decisions disappear
+because the accepted source is now in the editor. The guarded **Undo approved
+edit** command remains available as an editor CodeLens, a persistent
+**Undo SecureForge edit** status-bar control, and a button in the sidebar
+review card. Guarded Undo refuses to overwrite intervening edits or unexpected
+disk changes. Successful Undo returns the original buffer without modifying
+unrelated files. Saving is always a separate developer decision.
 
 ## Run in VS Code
 

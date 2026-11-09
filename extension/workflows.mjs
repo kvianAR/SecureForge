@@ -2,7 +2,7 @@ import { Workspace, redactSecrets } from '../src/workspace.mjs';
 import { createTrueForgeClient, resolveTrueForgeModel } from '../src/agent.mjs';
 import { LiveRun, localTrueForgeUrl } from '../src/live-run.mjs';
 import { runApprovedCommand } from '../src/commands.mjs';
-import { openReviewPayload } from './review-ui.mjs';
+import { registerInlineReview } from './inline-review.mjs';
 import { createPassport } from '../src/passport.mjs';
 import { registerSecurityCommands } from './security-ui.mjs';
 import path from 'node:path';
@@ -52,7 +52,16 @@ export function registerWorkflows(vscode, context) {
   let building = false;
   let buildController;
   const listeners = new Set();
-  function broadcast(message) { for (const listener of listeners) listener(message); }
+  // A review can begin before VS Code resolves the secondary-sidebar view.
+  // Keep its latest bounded state until the webview sends its ready handshake.
+  let latestInlineReviewState;
+  function broadcast(message) {
+    if (message?.type === 'inlineReviewState') {
+      latestInlineReviewState = Array.isArray(message.hunks) && message.hunks.length
+        ? message : undefined;
+    }
+    for (const listener of listeners) listener(message);
+  }
   function subscribe(listener) {
     listeners.add(listener);
     return { dispose: () => listeners.delete(listener) };
@@ -81,6 +90,17 @@ export function registerWorkflows(vscode, context) {
     if (status === 'applied' || status === 'undone' || status === 'rejected') {
       broadcast({ type: 'reviewResult', status, accepted: record.result?.accepted ?? 0 });
     }
+  }
+
+  // Register editor surfaces only when a proposal exists. This keeps context
+  // previews and verification commands independent of open editor state.
+  let inlineReview;
+  function getInlineReview() {
+    if (!inlineReview) {
+      inlineReview = registerInlineReview(vscode, context, { onApplied: recordReview, notify: broadcast });
+      context.subscriptions.push({ dispose: () => { void inlineReview.dispose(); } });
+    }
+    return inlineReview;
   }
 
   async function build(initialTask, inline = false) {
@@ -198,10 +218,12 @@ export function registerWorkflows(vscode, context) {
       }
       const workspace = await new Workspace(selected.uri.fsPath).init();
       try {
-        await openReviewPayload(vscode, context, workspace, payload, record => {
+        const review = getInlineReview();
+        await review.open(workspace, payload, record => {
           recordReview({ ...record, sessionId: payload.sessionId });
         });
         broadcast({ type: 'reviewReady', fileCount: payload.proposals.length, message: payload.reply || '' });
+        review.publish();
       } catch (error) { await workspace.close(); throw error; }
       return { status: 'review' };
     } finally {
@@ -350,9 +372,14 @@ export function registerWorkflows(vscode, context) {
       }
     }));
   }
-  const state = { folder, receipts, applied, securityReports, proofs, output, runCheck, recordReview, subscribe };
+  const state = { folder, receipts, applied, securityReports, proofs, output, runCheck, recordReview, subscribe,
+    currentReviewState: () => latestInlineReviewState,
+    openInlineReview: (workspace, payload, callback) => getInlineReview().open(workspace, payload, callback) };
   registerSecurityCommands(vscode, context, state);
   registerAgentPanel(vscode, context, { run: guardedBuild, cancel: () => { buildController?.abort(); return activeRun?.cancel(); }, attachFile, attachSymbol,
-    subscribe });
+    subscribe, currentReviewState: state.currentReviewState, reviewAction: (action, id) => {
+      if (!inlineReview) throw new Error('No inline review is active');
+      return inlineReview.action(action, id);
+    } });
   return state;
 }

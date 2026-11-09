@@ -29,7 +29,7 @@ export async function readProposalFile(filename) {
   } finally { await handle.close(); }
 }
 
-export function registerReviewCommands(vscode, context, onApplied = () => {}) {
+export function registerReviewCommands(vscode, context, onApplied = () => {}, openInline) {
   async function openReview(demo) {
     if (!vscode.workspace.isTrusted) throw new Error('Open a trusted local workspace');
     const folders = vscode.workspace.workspaceFolders?.filter(folder => folder.uri.scheme === 'file');
@@ -68,7 +68,8 @@ export function registerReviewCommands(vscode, context, onApplied = () => {}) {
         });
         proposal = store.getProposal(summary.id);
       }
-      await openReviewPayload(vscode, context, workspace, proposal, onApplied);
+      if (openInline) await openInline(workspace, proposal, onApplied);
+      else await openReviewPayload(vscode, context, workspace, proposal, onApplied);
     } catch (error) {
       await workspace.close();
       throw error;

@@ -121,6 +121,15 @@
           "contextualTitle": "SecureForge Agent"
         }
       ]
+    },
+    "menus": {
+      "editor/context": [
+        {
+          "command": "secureforge.inlineEdit",
+          "when": "editorHasSelection && editorTextFocus",
+          "group": "1_modification@50"
+        }
+      ]
     }
   }
 }
